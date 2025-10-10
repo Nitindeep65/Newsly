@@ -40,7 +40,7 @@ export default function FinlightNewsBell() {
             try {
               await sound?.play();
             } catch {
-              // ignore play errors
+              
             }
             setLastNewsId(latest.id);
             lastNewsIdRef.current = latest.id;

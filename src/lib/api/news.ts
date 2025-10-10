@@ -1,6 +1,6 @@
 "use client";
 
-// Update this interface to match your API response structure
+
 export interface NewsArticle {
   id?: string;
   title: string;
@@ -23,17 +23,17 @@ export interface NewsResponse {
   status?: string;
 }
 
-// Finlight API article structure (approximate based on Finlight v2 docs)
+
 interface FinlightArticle {
   id?: string;
   title: string;
   summary?: string;
   content?: string;
-  link?: string; // Finlight uses `link` for the article URL
-  images?: string[]; // Finlight returns array of image URLs
-  publishDate?: string; // ISO timestamp
-  published_at?: string; // alternate
-  publishedAt?: string; // sometimes normalized
+  link?: string; 
+  images?: string[]; 
+  publishDate?: string; 
+  published_at?: string; 
+  publishedAt?: string; 
   source?: {
     id?: string;
     name?: string;
@@ -42,9 +42,9 @@ interface FinlightArticle {
   category?: string;
 }
 
-// Finlight may return arrays under `data` or `articles`; we handle both shapes inline.
 
-// Local API routes configuration (to avoid CORS issues)
+
+
 const NEWS_API_CONFIG = {
   baseUrl: '/api/news',
   searchUrl: '/api/news/search',
@@ -58,7 +58,7 @@ const NEWS_API_CONFIG = {
 export class NewsService {
   static async getLatestNews(category?: string): Promise<NewsArticle[]> {
     try {
-      // Build API URL with parameters for our local API route
+      
       const params = new URLSearchParams({
         category: category || 'general',
         lang: NEWS_API_CONFIG.defaultParams.lang,
@@ -70,11 +70,25 @@ export class NewsService {
       const response = await fetch(apiUrl, { method: 'GET', cache: 'no-store' });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('News API Error Response:', errorText);
-        // If error is recoverable, return fallback articles
-        if (response.status === 429) return this.getFallbackArticles(category);
-        return [];
+        
+        let errorText = await response.text();
+        try {
+          const parsed = JSON.parse(errorText);
+          errorText = parsed?.error ? `${parsed.error}${parsed?.details ? ` - ${parsed.details}` : ''}` : errorText;
+        } catch {
+          
+        }
+        console.error('News API Error Response:', response.status, response.statusText, errorText);
+
+        
+        if (response.status === 429) {
+          console.warn('Rate limited by news API, retrying once after brief delay...');
+          await new Promise((res) => setTimeout(res, 750));
+          return this.getLatestNews(category);
+        }
+
+        
+        return this.getFallbackArticles(category);
       }
 
       const data = await response.json();
@@ -86,17 +100,15 @@ export class NewsService {
     } catch (error) {
       console.error('Error fetching news:', error);
       
-      // On error, return fallback articles
+      
       console.error(error);
       return this.getFallbackArticles(category);
     }
   }
 
-  // We no longer use GNews directly; server returns normalized Finlight-shaped articles.
+  
 
-  /**
-   * Get fallback articles when API is unavailable or rate limited
-   */
+  
   private static getFallbackArticles(category?: string): NewsArticle[] {
     const fallbackArticles = [
       {
@@ -161,7 +173,7 @@ export class NewsService {
       }
     ];
 
-    // Filter by category if specified
+    
     if (category && category !== 'all') {
       const filtered = fallbackArticles.filter(article => 
         article.category.toLowerCase() === category.toLowerCase()
@@ -172,9 +184,7 @@ export class NewsService {
     return fallbackArticles;
   }
 
-  /**
-   * Auto-categorize articles based on content
-   */
+  
   private static categorizeArticle(title: string, description: string): string {
     const content = ((title || '') + ' ' + (description || '')).toLowerCase();
     
@@ -190,16 +200,12 @@ export class NewsService {
     return 'General';
   }
 
-  /**
-   * Get news by specific category
-   */
+  
   static async getNewsByCategory(category: string): Promise<NewsArticle[]> {
     return this.getLatestNews(category);
   }
 
-  /**
-   * Search news articles using GNews API
-   */
+  
   static async searchNews(query: string): Promise<NewsArticle[]> {
     try {
       const params = new URLSearchParams({
@@ -225,16 +231,12 @@ export class NewsService {
     }
   }
 
-  /**
-   * Get trending news (latest news without category filter)
-   */
+  
   static async getTrendingNews(): Promise<NewsArticle[]> {
     return this.getLatestNews();
   }
   
-  /**
-   * Transform Finlight API articles to our NewsArticle interface
-   */
+  
   private static transformFinlightArticles(articles: FinlightArticle[]): NewsArticle[] {
     return articles
       .filter(a => a && (a.title || a.summary))
@@ -244,13 +246,45 @@ export class NewsService {
         const published = new Date(publishedRaw as string).toISOString();
         const sourceObj = typeof a.source === 'string' ? { id: undefined, name: a.source } : (a.source || { id: undefined, name: 'Unknown Source' });
 
+        
+  const aRecord = a as unknown as Record<string, unknown>;
+        const possibleUrlCandidates = [
+          
+          aRecord['link'],
+          aRecord['url'],
+          aRecord['original_url'],
+          aRecord['canonical_url'],
+          aRecord['source_url'],
+          aRecord['href'],
+        ].filter(Boolean) as string[];
+
+        let resolvedUrl = possibleUrlCandidates.find(Boolean) || '#';
+
+        
+        if (resolvedUrl && resolvedUrl.startsWith('//')) resolvedUrl = `https:${resolvedUrl}`;
+
+        
+        if (resolvedUrl && !resolvedUrl.startsWith('http') && /^[^\s\/]+\.[^\s]+/.test(resolvedUrl)) {
+          resolvedUrl = `https://${resolvedUrl}`;
+        }
+
+        
+        const possibleImageCandidates = [
+          ...(a.images || []),
+          aRecord['image'],
+          aRecord['thumbnail'],
+          aRecord['media'],
+        ].flat().filter(Boolean) as string[];
+
+        const resolvedImage = possibleImageCandidates.length ? possibleImageCandidates[0] : undefined;
+
         return {
           id: a.id || `finlight-${Date.now()}-${idx}`,
           title: a.title || (a.summary ? String(a.summary).slice(0, 60) : 'Untitled'),
           description: a.summary || a.content || 'No description available',
           content: a.content,
-          url: a.link || '#',
-          urlToImage: (a.images && a.images.length) ? a.images[0] : undefined,
+          url: resolvedUrl,
+          urlToImage: resolvedImage,
           publishedAt: published,
           author: a.author || undefined,
           source: {
@@ -264,7 +298,7 @@ export class NewsService {
 
 }
 
-// Utility functions
+
 export function formatPublishDate(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();

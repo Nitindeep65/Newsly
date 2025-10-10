@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 });
     }
 
-    // Validate URL
+    
     let url: URL;
     try {
       url = new URL(imageUrl);
@@ -17,27 +17,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
     }
 
-    // Allow http and https URLs (some CDNs or legacy sources may return http). Block anything else.
+    
     if (url.protocol !== 'https:' && url.protocol !== 'http:') {
       return NextResponse.json({ error: 'Only HTTP/HTTPS URLs are allowed' }, { status: 400 });
     }
 
     console.debug('[image-proxy] fetching', imageUrl);
 
-    // Fetch the image (allow redirects). Some hosts require a UA header.
+    
     const upstream = await fetch(imageUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; News-App/1.0)',
-        'Accept': 'image/*,*/*;q=0.8',
+        'Accept': 'image*;q=0.8',
       },
     });
 
     if (!upstream.ok) {
       console.warn(`[image-proxy] upstream fetch failed: ${upstream.status} ${upstream.statusText} for ${imageUrl}`);
-      return NextResponse.json({ error: `Upstream fetch failed with status ${upstream.status}` }, { status: 502 });
+      return NextResponse.json({ error: `Upstream fetch failed with status ${upstream.status}` }, { status: 502, headers: { 'Access-Control-Allow-Origin': '*' } });
     }
 
-    // Get content-type; if missing try to infer from URL extension, otherwise default to generic image type
+    
     let contentType = upstream.headers.get('content-type') || '';
     if (!contentType) {
       const extMatch = imageUrl.match(/\.([a-zA-Z0-9]{2,5})(?:[?#]|$)/);
@@ -55,10 +55,10 @@ export async function GET(request: NextRequest) {
     }
 
     if (contentType && !contentType.startsWith('image/')) {
-      return NextResponse.json({ error: 'URL does not point to an image' }, { status: 400 });
+      return NextResponse.json({ error: 'URL does not point to an image', contentType }, { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } });
     }
 
-    // Prepare headers for the proxied response. Prefer upstream cache-control when present.
+    
     const headers: Record<string, string> = {
       'Access-Control-Allow-Origin': '*',
       'Content-Type': contentType,
@@ -71,7 +71,21 @@ export async function GET(request: NextRequest) {
       headers['Cache-Control'] = 'public, max-age=86400';
     }
 
-    // Stream the upstream body back to the client rather than buffering everything in memory.
+    
+    try {
+      headers['X-Upstream-Status'] = String(upstream.status);
+      headers['X-Upstream-Content-Type'] = upstream.headers.get('content-type') || '';
+    } catch {
+      
+    }
+
+    
+    if (!upstream.body) {
+      console.warn('[image-proxy] upstream returned no body for', imageUrl);
+      return NextResponse.json({ error: 'Upstream returned no body' }, { status: 502, headers: { 'Access-Control-Allow-Origin': '*' } });
+    }
+
+    
     const body = upstream.body;
 
     return new NextResponse(body, {
@@ -88,7 +102,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Handle OPTIONS for CORS
+
 export async function OPTIONS() {
   return NextResponse.json({}, {
     headers: {

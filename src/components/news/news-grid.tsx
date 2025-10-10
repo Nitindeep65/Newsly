@@ -13,9 +13,10 @@ interface NewsGridProps {
   limit?: number;
   showCategoryFilter?: boolean;
   onArticleClick?: (article: NewsArticle) => void;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
-export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick }: NewsGridProps) {
+export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick, onLoadingChange }: NewsGridProps) {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +26,8 @@ export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick 
   const fetchNews = useCallback(async (category: string = 'all') => {
     try {
       setError(null);
+      setLoading(true);
+      if (onLoadingChange) onLoadingChange(true);
       const newsData = await NewsService.getLatestNews(category === 'all' ? undefined : category);
       setArticles(newsData.slice(0, limit));
     } catch (err) {
@@ -32,19 +35,21 @@ export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick 
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news';
       setError(errorMessage);
       
-      // If rate limited, show a more user-friendly message
+      
       if (errorMessage.includes('rate limit')) {
         setError('API rate limit reached. Showing demo articles below. Please try again in a few minutes.');
       }
     } finally {
       setLoading(false);
       setRefreshing(false);
+      if (onLoadingChange) onLoadingChange(false);
     }
-  }, [limit]);
+  }, [limit, onLoadingChange]);
 
   useEffect(() => {
     fetchNews(selectedCategory);
   }, [selectedCategory, limit, fetchNews]);
+  
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
@@ -159,7 +164,8 @@ export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick 
   }
 
   return (
-    <div className="space-y-6">
+    
+    <div className="space-y-6 px-4 sm:px-0">
       {showCategoryFilter && (
         <div className="flex items-center justify-between">
           <Select value={selectedCategory} onValueChange={handleCategoryChange}>
@@ -185,12 +191,13 @@ export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick 
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {articles.map((article) => (
-          <NewsTile 
-            key={article.id} 
-            article={article} 
+          <NewsTile
+            key={article.id}
+            article={article}
             onReadMore={onArticleClick}
+            showImage={false}
           />
         ))}
       </div>

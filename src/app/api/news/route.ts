@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Finlight (server-side key preferred)
+
 const FINLIGHT_API_KEY = process.env.FINLIGHT_API_KEY || process.env.NEXT_PUBLIC_FINLIGHT_API_KEY;
 
-// Minimal Finlight article shape used for server-side normalization. Keep this local to avoid
-// importing client-side modules at runtime; it's only used for typing and narrowing.
+
+
 type FinlightRaw = {
   id?: string;
   title?: string;
   summary?: string;
   content?: string;
   link?: string;
-  images?: string[];
   publishDate?: string;
   published_at?: string;
   publishedAt?: string;
@@ -21,7 +20,7 @@ type FinlightRaw = {
   [key: string]: unknown;
 };
 
-// We normalize provider responses on the server so the client always receives an array of NewsArticle-like objects.
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,21 +30,21 @@ const corsHeaders = {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get query parameters from the request
+    
     const { searchParams } = new URL(request.url);
     const requestedCategory = searchParams.get('category') || 'general';
     const lang = searchParams.get('lang') || 'en';
-    const country = searchParams.get('country') || 'us';
+    const country = searchParams.get('country') || 'IN';
     const max = searchParams.get('max') || '10';
     console.log(`API Route - Finlight params: category=${requestedCategory}, lang=${lang}, country=${country}, max=${max}`);
 
-    // Ensure Finlight key is available
+    
     if (!FINLIGHT_API_KEY) {
-      return NextResponse.json({ error: 'Finlight API key is not configured' }, { status: 500 });
+      return NextResponse.json({ error: 'Finlight API key is not configured' }, { status: 500, headers: corsHeaders });
     }
 
     try {
-      // Defer loading the client to avoid build-time issues
+      
       const { finlight } = await import('@/lib/finlight');
 
       const body: Record<string, unknown> = {
@@ -58,13 +57,95 @@ export async function GET(request: NextRequest) {
 
       console.log('Fetching from Finlight (SDK) with body:', body);
 
-      const finlightResp = await finlight.articles.fetchArticles(body);
+      
+      
+      let finlightResp: unknown = null;
 
-      // Normalize Finlight response to a consistent shape expected by the client.
-      const articles = Array.isArray(finlightResp?.articles) ? finlightResp.articles : [];
+      const tryInvoke = async (fn: unknown): Promise<unknown> => {
+        if (typeof fn === 'function') {
+          try {
+            const fnTyped = fn as (...args: unknown[]) => Promise<unknown> | unknown;
+            const result = fnTyped(body);
+            return result instanceof Promise ? await result : result;
+          } catch (e) {
+            
+            throw e;
+          }
+        }
+        return null;
+      };
 
-      const normalized = articles.map((a, idx: number) => {
-        // Cast SDK article to a local raw shape for safe property access
+      
+      if (typeof (finlight as unknown as Record<string, unknown>)?.articles === 'function') {
+        finlightResp = await tryInvoke((finlight as unknown as Record<string, unknown>).articles);
+      } else if ((finlight as unknown as Record<string, unknown>)?.articles && typeof (finlight as unknown as Record<string, unknown>).articles === 'object') {
+        
+        const candidates = ['fetchArticles', 'list', 'listArticles', 'search', 'searchArticles', 'query', 'getArticles', 'find'];
+        for (const name of candidates) {
+          const artRec = (finlight as unknown as Record<string, unknown>).articles as Record<string, unknown>;
+          if (typeof artRec[name] === 'function') {
+            console.log(`Calling finlight.articles.${name}()`);
+            finlightResp = await tryInvoke(artRec[name]);
+            break;
+          }
+        }
+
+        
+        if (!finlightResp) {
+          const artRec = (finlight as unknown as Record<string, unknown>).articles as Record<string, unknown> | object;
+          
+          const protoCandidates = ['getBasicArticles', 'getExtendedArticles', 'getArticles', 'fetchArticles', 'list', 'listArticles'];
+
+          const proto = Object.getPrototypeOf(artRec as object) || {};
+          const protoKeys = Object.getOwnPropertyNames(proto).filter(k => k !== 'constructor');
+
+          
+          let protoFnName: string | undefined = protoCandidates.find(n => protoKeys.includes(n));
+
+          
+          if (!protoFnName) protoFnName = protoKeys.find(k => typeof (proto as Record<string, unknown>)[k] === 'function');
+
+          if (protoFnName) {
+            console.log(`Calling prototype method finlight.articles.${protoFnName}()`);
+            const protoMethod = (proto as Record<string, unknown>)[protoFnName];
+            
+            const fn = protoMethod as (...args: unknown[]) => unknown;
+            finlightResp = await tryInvoke((...args: unknown[]) => fn.call(artRec, ...args));
+          } else {
+            const keys = Object.keys(artRec || {});
+            console.warn('No callable method found on finlight.articles. Available keys:', keys, 'prototype keys:', protoKeys);
+            
+            throw new Error(`finlight.articles has no callable methods. Available keys: ${keys.join(', ') || '<none>'}`);
+          }
+        }
+      } else if (typeof (finlight as unknown) === 'function') {
+        
+        finlightResp = await tryInvoke(finlight as unknown as (...args: unknown[]) => unknown);
+      } else {
+        
+        const topCandidates = ['fetchArticles', 'articles', 'listArticles', 'searchArticles'];
+        let invoked = false;
+        for (const name of topCandidates) {
+          const finRec = finlight as unknown as Record<string, unknown>;
+          if (typeof finRec[name] === 'function') {
+            console.log(`Calling finlight.${name}()`);
+            finlightResp = await tryInvoke(finRec[name]);
+            invoked = true;
+            break;
+          }
+        }
+        if (!invoked && !finlightResp) {
+          const topKeys = Object.keys(finlight as unknown as Record<string, unknown>);
+          throw new Error(`Finlight client missing expected methods. Available keys: ${topKeys.join(', ')}`);
+        }
+      }
+
+  
+  const finRespRec = finlightResp as unknown as Record<string, unknown> | undefined;
+  const articles = Array.isArray(finRespRec?.articles) ? (finRespRec!.articles as unknown[]) : [];
+
+      const normalized = articles.map((a: unknown, idx: number) => {
+        
         const raw = a as unknown as FinlightRaw;
         const publishedRaw = raw.publishDate || raw.published_at || raw.publishedAt || new Date().toISOString();
         const published = new Date(String(publishedRaw)).toISOString();
@@ -88,21 +169,47 @@ export async function GET(request: NextRequest) {
       });
 
       return NextResponse.json({ articles: normalized, totalResults: normalized.length, status: 'ok' }, { headers: corsHeaders });
-    } catch (err) {
+    } catch (err: unknown) {
+      
       console.error('Finlight SDK error:', err);
-      return NextResponse.json({ error: 'Finlight API error' }, { status: 502 });
+
+      
+      let details = '';
+      let upstreamStatus = 502;
+
+      if (err instanceof Error) {
+        details = err.message;
+        
+        const eRec = err as unknown as Record<string, unknown>;
+        const s = eRec['status'] ?? eRec['statusCode'];
+        upstreamStatus = typeof s === 'number' ? s : Number(s) || 502;
+      } else if (typeof err === 'string') {
+        details = err;
+      } else {
+        try {
+          details = JSON.stringify(err);
+        } catch {
+          details = String(err);
+        }
+      }
+
+      
+      return NextResponse.json(
+        { error: 'Finlight API error', details },
+        { status: upstreamStatus === 200 ? 502 : upstreamStatus, headers: corsHeaders }
+      );
     }
 
   } catch (error) {
     console.error('API Route Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch news' },
-      { status: 500 }
+      { error: 'Failed to fetch news', details: error instanceof Error ? error.message : String(error) },
+      { status: 500, headers: corsHeaders }
     );
   }
 }
 
-// Handle OPTIONS request for CORS preflight
+
 export async function OPTIONS() {
   return NextResponse.json({}, {
     headers: {

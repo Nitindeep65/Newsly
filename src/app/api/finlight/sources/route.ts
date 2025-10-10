@@ -3,7 +3,7 @@ import { finlight } from '@/lib/finlight';
 
 export async function GET() {
   try {
-    // Use the finlight client to fetch sources
+    
     const sources = await finlight.sources.getSources();
     return NextResponse.json({ sources }, { status: 200 });
   } catch (err) {

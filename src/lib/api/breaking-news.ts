@@ -45,13 +45,10 @@ export class BreakingNewsService {
     'conflict'
   ];
 
-  /**
-   * Fetch breaking news specifically for notifications
-   * This filters recent news that could be considered "breaking"
-   */
+  
   static async getBreakingNews(): Promise<BreakingNewsItem[]> {
     try {
-      // Fetch from multiple categories to catch breaking news
+      
       const categories = ['general', 'world', 'nation', 'politics'];
       const allBreakingNews: BreakingNewsItem[] = [];
 
@@ -62,7 +59,7 @@ export class BreakingNewsService {
             lang: 'en',
             country: 'us',
             max: '10',
-            sortby: 'publishedAt' // Get most recent first
+            sortby: 'publishedAt' 
           });
 
           const response = await fetch(`/api/news?${params}`, {
@@ -85,9 +82,9 @@ export class BreakingNewsService {
         }
       }
 
-      // Remove duplicates and sort by priority and recency
+      
       const uniqueNews = this.removeDuplicates(allBreakingNews);
-      return this.sortByPriorityAndRecency(uniqueNews).slice(0, 5); // Max 5 breaking news items
+      return this.sortByPriorityAndRecency(uniqueNews).slice(0, 5); 
 
     } catch (error) {
       console.error('Error fetching breaking news:', error);
@@ -95,29 +92,25 @@ export class BreakingNewsService {
     }
   }
 
-  /**
-   * Filter articles that qualify as breaking news
-   */
+  
   private static filterBreakingNews(articles: NewsArticle[], category: string): BreakingNewsItem[] {
     const now = new Date();
-    const twoHoursAgo = new Date(now.getTime() - (2 * 60 * 60 * 1000)); // 2 hours ago
+    const twoHoursAgo = new Date(now.getTime() - (2 * 60 * 60 * 1000)); 
 
     return articles
       .filter(article => {
-        // Check if article is recent (within last 2 hours)
+        
         const publishedAt = new Date(article.publishedAt);
         if (publishedAt < twoHoursAgo) return false;
 
-        // Check if title or description contains breaking news keywords
+        
         const text = (article.title + ' ' + article.description).toLowerCase();
         return this.BREAKING_NEWS_KEYWORDS.some(keyword => text.includes(keyword));
       })
       .map(article => this.transformToBreakingNews(article, category));
   }
 
-  /**
-   * Transform NewsArticle to BreakingNewsItem
-   */
+  
   private static transformToBreakingNews(article: NewsArticle, category: string): BreakingNewsItem {
     const text = (article.title + ' ' + article.description).toLowerCase();
     const priority = this.determinePriority(text);
@@ -134,9 +127,7 @@ export class BreakingNewsService {
     };
   }
 
-  /**
-   * Determine priority based on keywords
-   */
+  
   private static determinePriority(text: string): 'high' | 'medium' | 'low' {
     if (this.HIGH_PRIORITY_KEYWORDS.some(keyword => text.includes(keyword))) {
       return 'high';
@@ -147,17 +138,15 @@ export class BreakingNewsService {
     return 'low';
   }
 
-  /**
-   * Remove duplicate news items based on title similarity
-   */
+  
   private static removeDuplicates(items: BreakingNewsItem[]): BreakingNewsItem[] {
     const seen = new Set<string>();
     return items.filter(item => {
-      // Create a normalized title for comparison
+      
       const normalizedTitle = item.title.toLowerCase()
         .replace(/[^a-z0-9\s]/g, '')
         .trim()
-        .substring(0, 30); // First 30 chars for comparison
+        .substring(0, 30); 
 
       if (seen.has(normalizedTitle)) {
         return false;
@@ -167,25 +156,21 @@ export class BreakingNewsService {
     });
   }
 
-  /**
-   * Sort by priority and then by recency
-   */
+  
   private static sortByPriorityAndRecency(items: BreakingNewsItem[]): BreakingNewsItem[] {
     const priorityOrder = { high: 3, medium: 2, low: 1 };
 
     return items.sort((a, b) => {
-      // First sort by priority
+      
       const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
       if (priorityDiff !== 0) return priorityDiff;
 
-      // Then sort by recency
+      
       return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
     });
   }
 
-  /**
-   * Format category name for display
-   */
+  
   private static formatCategory(category: string): string {
     const categoryMap: { [key: string]: string } = {
       'general': 'General',
@@ -203,17 +188,12 @@ export class BreakingNewsService {
     return categoryMap[category] || category.charAt(0).toUpperCase() + category.slice(1);
   }
 
-  /**
-   * Check if an item is truly new (not seen before)
-   * This should be used with localStorage to prevent duplicate notifications
-   */
+  
   static isNewBreakingNews(item: BreakingNewsItem, seenIds: string[]): boolean {
     return !seenIds.includes(item.id);
   }
 
-  /**
-   * Format time for notification display
-   */
+  
   static formatNotificationTime(publishedAt: string): string {
     const now = new Date();
     const published = new Date(publishedAt);

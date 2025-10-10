@@ -11,24 +11,26 @@ import { SmartImage } from "@/components/ui/smart-image";
 interface NewsTileProps {
   article: NewsArticle;
   onReadMore?: (article: NewsArticle) => void;
+  showImage?: boolean;
 }
 
-export function NewsTile({ article, onReadMore }: NewsTileProps) {
+export function NewsTile({ article, onReadMore, showImage = true }: NewsTileProps) {
   const handleReadMore = () => {
     if (onReadMore) {
       onReadMore(article);
     } else {
-      // Default behavior: open article in new tab
+      
       window.open(article.url, '_blank');
     }
   };
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col">
-      {/* SmartImage handles error states internally */}
-      {article.urlToImage && (
+      
+      {showImage && article.urlToImage && (
         <div className="relative">
-          <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
+          
+          <div className="relative h-40 sm:h-44 md:h-48 w-full overflow-hidden rounded-t-lg">
             <SmartImage
               src={article.urlToImage}
               alt={article.title}
@@ -37,7 +39,7 @@ export function NewsTile({ article, onReadMore }: NewsTileProps) {
             />
           </div>
           <div className="absolute top-2 left-2">
-            <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm">
+            <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm text-xs sm:text-sm">
               {article.category}
             </Badge>
           </div>
@@ -45,8 +47,7 @@ export function NewsTile({ article, onReadMore }: NewsTileProps) {
       )}
 
       
-      {/* If no image from API, show category badge in header area */}
-      {!article.urlToImage && (
+  {!article.urlToImage && (
         <div className="p-4 pb-0">
           <Badge variant="secondary">
             {article.category || 'News'}
@@ -54,17 +55,17 @@ export function NewsTile({ article, onReadMore }: NewsTileProps) {
         </div>
       )}
       
-      <CardHeader className="pb-2">
-        <CardTitle className="line-clamp-2 text-lg leading-tight group-hover:text-primary transition-colors">
+      <CardHeader className="pb-2 px-3 sm:px-4">
+        <CardTitle className="line-clamp-2 text-base sm:text-lg leading-tight group-hover:text-primary transition-colors">
           {article.title}
         </CardTitle>
-        <CardDescription className="line-clamp-3 text-sm">
+        <CardDescription className="line-clamp-3 text-xs sm:text-sm">
           {article.description}
         </CardDescription>
       </CardHeader>
       
       <CardContent className="pt-0 flex-1 flex flex-col justify-between">
-        <div className="space-y-3">
+  <div className="space-y-3 px-3 sm:px-4">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
@@ -83,10 +84,10 @@ export function NewsTile({ article, onReadMore }: NewsTileProps) {
           </div>
         </div>
         
-        <Button 
-          onClick={handleReadMore} 
-          variant="outline" 
-          size="sm" 
+        <Button
+          onClick={handleReadMore}
+          variant="outline"
+          size="sm"
           className="mt-4 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
         >
           <ExternalLink className="h-3 w-3 mr-1" />

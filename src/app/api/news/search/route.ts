@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Search query parameter (q) is required' }, { status: 400 });
     }
 
-    // Use Finlight SDK to search articles
+    
     try {
       const { finlight } = await import('@/lib/finlight');
 
@@ -45,10 +45,65 @@ export async function GET(request: NextRequest) {
         pageSize: max,
       };
 
-      const resp = await finlight.articles.fetchArticles(body);
-      const articles = Array.isArray(resp?.articles) ? resp.articles : [];
+      
+      const tryInvoke = async (fn: unknown): Promise<unknown> => {
+        if (typeof fn === 'function') {
+          const f = fn as (...args: unknown[]) => Promise<unknown> | unknown;
+          const res = f(body);
+          return res instanceof Promise ? await res : res;
+        }
+        return null;
+      };
 
-      const normalized = articles.map((a, idx: number) => {
+      let finlightResp: unknown = null;
+
+      
+      const finRec = finlight as unknown as Record<string, unknown>;
+
+      if (typeof finRec?.articles === 'function') {
+        finlightResp = await tryInvoke(finRec.articles);
+      } else if (finRec?.articles && typeof finRec.articles === 'object') {
+        const artRec = finRec.articles as Record<string, unknown>;
+        const candidates = ['search', 'searchArticles', 'fetchArticles', 'list', 'listArticles', 'query', 'getArticles', 'find'];
+        for (const name of candidates) {
+          if (typeof artRec[name] === 'function') {
+            finlightResp = await tryInvoke(artRec[name]);
+            break;
+          }
+        }
+
+        if (!finlightResp) {
+          const proto = Object.getPrototypeOf(artRec) || {};
+          const protoKeys = Object.getOwnPropertyNames(proto).filter(k => k !== 'constructor');
+          const protoCandidates = ['getBasicArticles', 'getExtendedArticles', 'getArticles', 'fetchArticles', 'list', 'listArticles'];
+          let protoFnName: string | undefined = protoCandidates.find(n => protoKeys.includes(n));
+          if (!protoFnName) protoFnName = protoKeys.find(k => typeof (proto as Record<string, unknown>)[k] === 'function');
+          if (protoFnName) {
+            const protoMethod = (proto as Record<string, unknown>)[protoFnName];
+            finlightResp = await tryInvoke((...args: unknown[]) => (protoMethod as unknown as (...a: unknown[]) => unknown).call(artRec, ...args));
+          } else {
+            throw new Error('finlight.articles has no callable search method');
+          }
+        }
+      } else if (typeof finlight === 'function') {
+        finlightResp = await tryInvoke(finlight as unknown as (...a: unknown[]) => unknown);
+      } else {
+        const topCandidates = ['search', 'searchArticles', 'fetchArticles', 'listArticles'];
+        let invoked = false;
+        for (const name of topCandidates) {
+          if (typeof finRec[name] === 'function') {
+            finlightResp = await tryInvoke(finRec[name]);
+            invoked = true;
+            break;
+          }
+        }
+        if (!invoked && !finlightResp) throw new Error('Finlight client missing expected search methods');
+      }
+
+      const finRespRec = finlightResp as unknown as Record<string, unknown> | undefined;
+      const articles = Array.isArray(finRespRec?.articles) ? (finRespRec!.articles as unknown[]) : [];
+
+      const normalized = articles.map((a: unknown, idx: number) => {
         const raw = a as unknown as FinlightRaw;
         const publishedRaw = raw.publishDate || raw.published_at || raw.publishedAt || new Date().toISOString();
         const published = new Date(String(publishedRaw)).toISOString();
@@ -74,7 +129,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ articles: normalized, totalResults: normalized.length, status: 'ok' }, { headers: corsHeaders });
     } catch (err) {
       console.error('Finlight SDK search error:', err);
-      return NextResponse.json({ error: 'Finlight search error' }, { status: 502 });
+      const details = err instanceof Error ? err.message : String(err);
+      return NextResponse.json({ error: 'Finlight search error', details }, { status: 502, headers: corsHeaders });
     }
 
   } catch (error) {
@@ -83,7 +139,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Handle OPTIONS request for CORS preflight
+
 export async function OPTIONS() {
   return NextResponse.json({}, {
     headers: {

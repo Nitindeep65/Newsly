@@ -4,13 +4,11 @@ import { SignUp } from '@clerk/nextjs'
 export default function Page() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300 flex items-center justify-center relative">
-      {/* Theme toggle positioned in top-right corner */}
       <div className="absolute top-4 right-4 z-10">
         <ModeToggle />
       </div>
       
-      {/* Sign-up form centered */}
-      <div className="w-full max-w-md px-4">
+  <div className="w-full max-w-md px-4">
         <SignUp 
           appearance={{
             elements: {

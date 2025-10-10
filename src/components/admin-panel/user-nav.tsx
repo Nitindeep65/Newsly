@@ -25,7 +25,7 @@ export function UserNav() {
   const { user , isLoaded } = useUser();
   const { signOut } = useClerk();
 
-  // Early return while Clerk loads
+  
   if (!user) return null;
   if (!isLoaded) return null;
 

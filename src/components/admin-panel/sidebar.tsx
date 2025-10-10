@@ -36,7 +36,6 @@ export function Sidebar() {
           asChild
         >
           <Link href="/dashboard" className="flex items-center gap-2">
-            {/* ✅ App icon (replace path with your actual icon file) */}
             <Image
               src="/news-app.png"
               alt="Newsly Logo"
@@ -49,7 +48,7 @@ export function Sidebar() {
               priority
             />
 
-            {/* ✅ App name (shown only when sidebar is open) */}
+            
             <h1
               className={cn(
                 "font-bold text-lg whitespace-nowrap transition-[transform,opacity,display] ease-in-out duration-300",
@@ -63,8 +62,8 @@ export function Sidebar() {
           </Link>
         </Button>
 
-        {/* Menu Items */}
-        <Menu isOpen={getOpenState()} />
+        
+  <Menu isOpen={getOpenState()} />
       </div>
     </aside>
   );

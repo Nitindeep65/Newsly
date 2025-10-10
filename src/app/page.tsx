@@ -6,7 +6,6 @@ import Link from 'next/link';
 export default function AINewsLandingPage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Navigation */}
       <nav className="fixed top-0 w-full bg-black/90 backdrop-blur-sm z-50 border-b  border-white/10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
@@ -29,9 +28,7 @@ export default function AINewsLandingPage() {
             </div>
           </div>
         </div>
-      </nav>
-
-      {/* Hero Section */}
+  </nav>
       <section className="min-h-screen flex items-center justify-center px-6 pt-26">
         <div className="max-w-6xl mx-auto text-center space-y-10">
           <div className="inline-flex items-center space-x-2 border border-white/20 rounded-full px-4 py-2 text-sm">
@@ -58,7 +55,7 @@ export default function AINewsLandingPage() {
             </button>
           </div>
 
-          {/* Demo Preview */}
+          
           <div className="pt-16">
             <div className="border border-white/10 rounded-lg p-8 bg-white/5 backdrop-blur-sm max-w-4xl mx-auto">
               <div className="space-y-6 text-left">
@@ -88,7 +85,7 @@ export default function AINewsLandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
+      
       <section id="features" className="py-32 px-6 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
@@ -139,7 +136,7 @@ export default function AINewsLandingPage() {
         </div>
       </section>
 
-      {/* How It Works */}
+      
       <section id="how" className="py-32 px-6 border-t border-white/10">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-5xl md:text-6xl font-light mb-20 text-center">How It Works</h2>
@@ -182,7 +179,7 @@ export default function AINewsLandingPage() {
         </div>
       </section>
 
-      {/* Stats */}
+      
       <section className="py-32 px-6 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-16 text-center">
@@ -201,7 +198,7 @@ export default function AINewsLandingPage() {
         </div>
       </section>
 
-      {/* Pricing */}
+      
       <section id="pricing" className="py-32 px-6 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
@@ -273,7 +270,7 @@ export default function AINewsLandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      
       <section className="py-32 px-6 border-t border-white/10">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <h2 className="text-5xl md:text-7xl font-light leading-tight">
@@ -289,7 +286,7 @@ export default function AINewsLandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
+      
       <footer className="border-t border-white/10 py-16 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
