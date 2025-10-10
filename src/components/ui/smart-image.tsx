@@ -77,8 +77,8 @@ export function SmartImage({
       )}
       
       {imageError && !triedFallbackImg && (
-        
-        <img
+
+        <Image
           src={normalizedSrc}
           alt={alt}
           className={`${className} object-cover`}

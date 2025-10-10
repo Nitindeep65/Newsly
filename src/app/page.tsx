@@ -1,34 +1,11 @@
-import { ModeToggle } from '@/components/togglemode';
-import { UserButton } from "@clerk/nextjs";
 import Link from 'next/link';
+import { NavBar } from '@/components/navbar/NavBar';
 
 
 export default function AINewsLandingPage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      <nav className="fixed top-0 w-full bg-black/90 backdrop-blur-sm z-50 border-b  border-white/10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-black font-bold text-lg">N</span>
-              </div>
-              <span className="text-xl font-light tracking-wide">Newsly</span>
-            </div>
-            <div className="hidden md:flex items-center space-x-10 text-sm">
-              <Link href="#features" className="hover:text-gray-400 transition-colors">Features</Link>
-              <Link href="#how" className="hover:text-gray-400 transition-colors">How it Works</Link>
-              <Link href="#pricing" className="hover:text-gray-400 transition-colors">Pricing</Link>
-              <Link href={'/sign-in'} className="hover:text-gray-400 transition-colors">Sign In</Link>
-             <Link href={'/sign-up'}  className="bg-white text-black px-6 py-2 rounded hover:bg-gray-200 transition-colors font-medium">
-                Get Started
-             </Link>
-             <UserButton afterSignOutUrl="/" />
-             <ModeToggle/>
-            </div>
-          </div>
-        </div>
-  </nav>
+      <NavBar />
       <section className="min-h-screen flex items-center justify-center px-6 pt-26">
         <div className="max-w-6xl mx-auto text-center space-y-10">
           <div className="inline-flex items-center space-x-2 border border-white/20 rounded-full px-4 py-2 text-sm">
@@ -53,34 +30,6 @@ export default function AINewsLandingPage() {
             <button className="px-10 py-4 border border-white hover:bg-white hover:text-black transition-all duration-300 rounded">
               Watch Demo
             </button>
-          </div>
-
-          
-          <div className="pt-16">
-            <div className="border border-white/10 rounded-lg p-8 bg-white/5 backdrop-blur-sm max-w-4xl mx-auto">
-              <div className="space-y-6 text-left">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-xs text-gray-500 uppercase tracking-wider">Technology</span>
-                      <span className="text-xs text-gray-600">•</span>
-                      <span className="text-xs text-gray-500">2 min read</span>
-                    </div>
-                    <h3 className="text-xl font-light">Latest AI Breakthrough in Machine Learning</h3>
-                  </div>
-                  <div className="ml-4 w-20 h-20 bg-white/10 rounded flex-shrink-0"></div>
-                </div>
-                <p className="text-sm text-gray-400 leading-relaxed">
-                  ✨ AI Summary: Researchers have developed a new neural network architecture that significantly improves processing speed while reducing computational costs by 40%...
-                </p>
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-xs text-gray-600">Generated in 0.8s</span>
-                  <button className="text-xs border border-white/20 px-4 py-1 rounded hover:border-white/40 transition-colors">
-                    Read Full Article →
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -329,5 +278,6 @@ export default function AINewsLandingPage() {
         </div>
       </footer>
     </div>
+    
   );
 }
