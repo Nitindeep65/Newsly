@@ -14,6 +14,7 @@ import { NewsGrid } from "@/components/news/news-grid";
 import { Newspaper, BookOpen, Bookmark, TrendingUp } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useState } from 'react';
+import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
 
 
 export default function DashboardPage() {
@@ -29,12 +30,13 @@ export default function DashboardPage() {
   };
 
   return (
-    <ContentLayout title="Dashboard">
-      {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-50">
-          <Spinner className="w-8 h-8  text-black" />
-        </div>
-      )}
+    <><SignedIn>
+      <ContentLayout title="Dashboard">
+        {loading && (
+          <div className="fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-50">
+            <Spinner className="w-8 h-8  text-black" />
+          </div>
+        )}
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -45,9 +47,9 @@ export default function DashboardPage() {
               <BreadcrumbPage>Latest News</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
-  </Breadcrumb>
+        </Breadcrumb>
 
-  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Welcome to Newsly</CardTitle>
@@ -99,9 +101,9 @@ export default function DashboardPage() {
               </p>
             </CardContent>
           </Card>
-  </div>
+        </div>
 
-  <div className="mt-8">
+        <div className="mt-8">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Latest News</h2>
@@ -117,9 +119,12 @@ export default function DashboardPage() {
             onLoadingChange={handleGridLoadingChange}
             onArticleClick={(article) => {
               window.open(article.url, '_blank');
-            }}
-          />
+            } } />
         </div>
       </ContentLayout>
+    </SignedIn><SignedOut>
+        <RedirectToSignIn />
+      </SignedOut></>
+      
   );
 }
