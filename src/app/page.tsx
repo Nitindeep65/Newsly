@@ -57,8 +57,8 @@ export default function AINewsLandingPage() {
             Skip the noise. Get AI-curated news summaries from 10,000+ sources delivered in seconds.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-4 sm:pt-6 px-4">
-            <Link href="/sign-in" className="group inline-flex items-center px-8 sm:px-10 py-3 sm:py-4 bg-white text-black rounded hover:bg-gray-100 transition-all duration-300 text-sm sm:text-base font-medium">
+          <div className="flex flex-col sm:flex-row gap-3 items-center sm:gap-4 justify-center pt-4 sm:pt-6 px-4">
+            <Link href="/sign-in" className="group inline-flex sm:items-center items-center px-8 sm:px-10 py-3 sm:py-4 bg-white text-black rounded hover:bg-gray-100 transition-all duration-300 text-sm sm:text-base font-medium">
               Start Reading Free
               <span className="ml-2 group-hover:translate-x-1 inline-block transition-transform">→</span>
             </Link>
