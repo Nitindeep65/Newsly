@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 
 import { NewsService, NewsArticle } from '@/lib/api/news';
 import Image from 'next/image';
+import { SHOW_IMAGES } from '@/lib/app-config';
 import { formatPublishDate } from '@/lib/api/news';
 import { useRef } from 'react';
 
@@ -245,12 +246,12 @@ export default function NewsComparison({ initialCategory = 'all' }: { initialCat
             ) : (
               <div className="flex-1 flex flex-col gap-6">
                 
-                {!(summary && !summaryLoading && !summaryError) && (
+                {SHOW_IMAGES && !(summary && !summaryLoading && !summaryError) && (
                   <div className="w-full h-[420px] md:h-[520px] relative rounded-md overflow-hidden bg-muted flex-shrink-0">
                     {selected.urlToImage ? (
                       <Image src={selected.urlToImage} alt={selected.title} fill className="object-cover" />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-muted-foreground">No image</div>
+                      <div className="flex items-center justify-center h-full text-muted-foreground">{/* intentionally empty when images are disabled */}</div>
                     )}
                   </div>
                 )}
@@ -263,7 +264,6 @@ export default function NewsComparison({ initialCategory = 'all' }: { initialCat
                     <div>
                       <h4 className="text-lg font-semibold mb-2">AI-generated summary</h4>
                       <p className="text-base leading-relaxed">{summary}</p>
-                      <div className="mt-3 text-xs text-muted-foreground">Generated from article content/title in-window.</div>
                     </div>
                   )}
 

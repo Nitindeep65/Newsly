@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import { SHOW_IMAGES } from '@/lib/app-config';
 import { ImageIcon } from 'lucide-react';
 
 interface SmartImageProps {
@@ -26,6 +27,11 @@ export function SmartImage({
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [triedFallbackImg, setTriedFallbackImg] = useState(false);
+
+  if (!SHOW_IMAGES) {
+    // globally disabled; render nothing (preserve layout by caller)
+    return null;
+  }
 
   
   if (!src || imageError) {

@@ -1,5 +1,4 @@
 import {
-  Tag,
   Bookmark,
   SquarePen,
   LayoutGrid,
@@ -50,17 +49,12 @@ export function getMenuList(pathname: string): Group[] {
           icon: Newspaper,
           active: pathname.includes("/admin-panel/news")
         },
-        {
-          href: "/admin-panel/categories",
-          label: "Categories",
-          icon: Tag,
-          active: pathname.includes("/admin-panel/categories")
-        },
+        
         {
           href: "/admin-panel/bookmarks",
           label: "Bookmarks",
           icon: Bookmark,
-          active: pathname.includes("/admin-panel/bookmarks")
+          active: pathname.includes("/bookmarks")
         },
         {
           href: "/admin-panel/write",
