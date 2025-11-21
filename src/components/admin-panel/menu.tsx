@@ -15,6 +15,7 @@ import {
   TooltipContent,
   TooltipProvider
 } from "@/components/ui/tooltip";
+import { SignOutButton } from "@clerk/nextjs";
 
 interface MenuProps {
   isOpen: boolean | undefined;
@@ -136,7 +137,7 @@ export function Menu({ isOpen }: MenuProps) {
                   </Button>
                 </TooltipTrigger>
                 {isOpen === false && (
-                  <TooltipContent side="right">Sign out</TooltipContent>
+                  <TooltipContent><SignOutButton/></TooltipContent>
                 )}
               </Tooltip>
             </TooltipProvider>

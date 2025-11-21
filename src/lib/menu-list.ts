@@ -1,11 +1,9 @@
 import {
   Bookmark,
-  SquarePen,
   LayoutGrid,
   LucideIcon,
   Newspaper,
-  Bell,
-  BarChart3
+
 } from "lucide-react";
 
 type Submenu = {
@@ -56,30 +54,7 @@ export function getMenuList(pathname: string): Group[] {
           icon: Bookmark,
           active: pathname.includes("/bookmarks")
         },
-        {
-          href: "/admin-panel/write",
-          label: "Write Article",
-          icon: SquarePen,
-          active: pathname.includes("/admin-panel/write")
-        }
       ]
     },
-    {
-      groupLabel: "Analytics",
-      menus: [
-        {
-          href: "/admin-panel/analytics",
-          label: "Analytics",
-          icon: BarChart3,
-          active: pathname.includes("/admin-panel/analytics")
-        },
-        {
-          href: "/admin-panel/notifications",
-          label: "Notifications",
-          icon: Bell,
-          active: pathname.includes("/admin-panel/notifications")
-        }
-      ]
-    }
   ];
 }

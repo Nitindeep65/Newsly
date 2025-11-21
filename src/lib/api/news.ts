@@ -67,7 +67,11 @@ export class NewsService {
       });
 
       const apiUrl = `${NEWS_API_CONFIG.baseUrl}?${params}`;
-      const response = await fetch(apiUrl, { method: 'GET', cache: 'no-store' });
+      const response = await fetch(apiUrl, { 
+        method: 'GET', 
+        cache: 'default',
+        next: { revalidate: 480 } // Cache for 8 minutes
+      });
 
       if (!response.ok) {
         
@@ -215,7 +219,11 @@ export class NewsService {
         max: '8',
       });
 
-      const response = await fetch(`${NEWS_API_CONFIG.searchUrl}?${params}`, { method: 'GET', cache: 'no-store' });
+      const response = await fetch(`${NEWS_API_CONFIG.searchUrl}?${params}`, { 
+        method: 'GET', 
+        cache: 'default',
+        next: { revalidate: 480 } // Cache for 8 minutes
+      });
       if (!response.ok) {
         console.error('Search API error', response.statusText);
         return [];

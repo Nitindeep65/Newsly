@@ -22,6 +22,8 @@ export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick,
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+  const [nextRefreshIn, setNextRefreshIn] = useState<number>(0);
 
   const fetchNews = useCallback(async (category: string = 'all') => {
     try {
@@ -30,6 +32,7 @@ export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick,
       if (onLoadingChange) onLoadingChange(true);
       const newsData = await NewsService.getLatestNews(category === 'all' ? undefined : category);
       setArticles(newsData.slice(0, limit));
+      setLastFetchTime(Date.now());
     } catch (err) {
       console.error('Failed to fetch news:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news';
@@ -45,6 +48,25 @@ export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick,
       if (onLoadingChange) onLoadingChange(false);
     }
   }, [limit, onLoadingChange]);
+
+  // Auto-refresh every 8 minutes (480000ms)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const timeSinceLastFetch = now - lastFetchTime;
+      const timeUntilRefresh = 480000 - timeSinceLastFetch; // 8 minutes in ms
+
+      if (timeUntilRefresh <= 0 && !loading && !refreshing && lastFetchTime > 0) {
+        console.log('Auto-refreshing news after 8 minutes');
+        setRefreshing(true);
+        fetchNews(selectedCategory);
+      } else if (lastFetchTime > 0) {
+        setNextRefreshIn(Math.max(0, Math.ceil(timeUntilRefresh / 1000))); // seconds
+      }
+    }, 1000); // Check every second for smooth countdown
+
+    return () => clearInterval(interval);
+  }, [lastFetchTime, loading, refreshing, selectedCategory, fetchNews]);
 
   useEffect(() => {
     fetchNews(selectedCategory);
@@ -98,14 +120,21 @@ export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick,
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              onClick={handleRefresh}
-              variant="outline"
-              size="sm"
-              disabled={refreshing}
-            >
-              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-            </Button>
+            <div className="flex items-center gap-3">
+              {nextRefreshIn > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  Next auto-refresh in {Math.floor(nextRefreshIn / 60)}:{(nextRefreshIn % 60).toString().padStart(2, '0')}
+                </span>
+              )}
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                size="sm"
+                disabled={refreshing}
+              >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
           </div>
         )}
         
@@ -139,14 +168,21 @@ export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick,
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              onClick={handleRefresh}
-              variant="outline"
-              size="sm"
-              disabled={refreshing}
-            >
-              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-            </Button>
+            <div className="flex items-center gap-3">
+              {nextRefreshIn > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  Next auto-refresh in {Math.floor(nextRefreshIn / 60)}:{(nextRefreshIn % 60).toString().padStart(2, '0')}
+                </span>
+              )}
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                size="sm"
+                disabled={refreshing}
+              >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
           </div>
         )}
         
@@ -180,14 +216,21 @@ export function NewsGrid({ limit = 6, showCategoryFilter = true, onArticleClick,
               ))}
             </SelectContent>
           </Select>
-          <Button
-            onClick={handleRefresh}
-            variant="outline"
-            size="sm"
-            disabled={refreshing}
-          >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          </Button>
+          <div className="flex items-center gap-3">
+            {nextRefreshIn > 0 && (
+              <span className="text-xs text-muted-foreground">
+                Next auto-refresh in {Math.floor(nextRefreshIn / 60)}:{(nextRefreshIn % 60).toString().padStart(2, '0')}
+              </span>
+            )}
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              size="sm"
+              disabled={refreshing}
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
         </div>
       )}
 
