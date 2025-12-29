@@ -122,8 +122,16 @@ Return ONLY valid JSON, no markdown code blocks.`;
   }
 }
 
+interface NewsletterContent {
+  headline: string;
+  summary: string;
+  intro: string;
+  cta: string;
+  sections: Array<{ title: string; content: string; link?: string }>;
+}
+
 function generateHtmlFromContent(
-  content: any,
+  content: NewsletterContent,
   topic: NewsletterTopic,
   tier: string
 ): string {
@@ -142,7 +150,7 @@ function generateHtmlFromContent(
     : '';
 
   const sectionsHtml = content.sections
-    .map((section: any) => `
+    .map((section: { title: string; content: string; link?: string }) => `
       <div style="margin-bottom: 24px; padding: 16px; background: #f9fafb; border-radius: 8px;">
         <h3 style="margin: 0 0 12px 0; color: #111827; font-size: 18px;">${section.title}</h3>
         <p style="margin: 0; color: #4b5563; line-height: 1.6;">${section.content}</p>
