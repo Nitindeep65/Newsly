@@ -1,9 +1,11 @@
 import {
-  Bookmark,
   LayoutGrid,
   LucideIcon,
-  Newspaper,
-
+  Wrench,
+  Mail,
+  Users,
+  PlusCircle,
+  Send,
 } from "lucide-react";
 
 type Submenu = {
@@ -39,20 +41,42 @@ export function getMenuList(pathname: string): Group[] {
       ]
     },
     {
-      groupLabel: "Content",
+      groupLabel: "Newsletter",
       menus: [
         {
-          href: "/admin-panel/news",
-          label: "News Feed",
-          icon: Newspaper,
-          active: pathname.includes("/admin-panel/news")
+          href: "/admin-panel/newsletters/new",
+          label: "Create Newsletter",
+          icon: Send,
+          active: pathname === "/admin-panel/newsletters/new"
         },
-        
         {
-          href: "/admin-panel/bookmarks",
-          label: "Bookmarks",
-          icon: Bookmark,
-          active: pathname.includes("/bookmarks")
+          href: "/admin-panel/subscribers",
+          label: "Subscribers",
+          icon: Users,
+          active: pathname.includes("/admin-panel/subscribers")
+        },
+        {
+          href: "/admin-panel/newsletters",
+          label: "All Newsletters",
+          icon: Mail,
+          active: pathname === "/admin-panel/newsletters"
+        },
+      ]
+    },
+    {
+      groupLabel: "Tools",
+      menus: [
+        {
+          href: "/admin-panel/tools",
+          label: "All Tools",
+          icon: Wrench,
+          active: pathname === "/admin-panel/tools"
+        },
+        {
+          href: "/admin-panel/tools/new",
+          label: "Add Tool",
+          icon: PlusCircle,
+          active: pathname === "/admin-panel/tools/new"
         },
       ]
     },

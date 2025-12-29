@@ -1,82 +1,98 @@
-Newsly — Admin dashboard & Reader
+# AI Tools Weekly
 
-This repository contains Newsly, a Next.js (App Router) news reader and admin dashboard built with TypeScript and Tailwind.
+A modern newsletter platform for curating and sharing the latest AI tools. Built with Next.js 15, TypeScript, and Tailwind CSS.
 
-This README focuses on developer onboarding: structure, how to run, common tasks, and safe configuration. It intentionally does not include any API keys or sensitive values.
+## Features
 
-## Quick start (local)
+- 🤖 **AI-Powered Newsletter Generation** - Automated newsletter creation using Google Gemini
+- 📧 **Email Delivery** - Newsletter delivery via Resend
+- 💳 **Subscription Tiers** - Free, Pro, and Premium tiers with PhonePe payment integration
+- 🔐 **Authentication** - Secure auth with Clerk
+- 📊 **Admin Dashboard** - Manage tools, subscribers, and newsletters
+- 🎨 **Modern UI** - Built with Radix UI and shadcn/ui components
 
-1. Install dependencies
+## Quick Start
+
+1. **Install dependencies**
 
 ```bash
 npm install
 ```
 
-2. Configure non-secret environment values
+2. **Configure environment**
 
-Create a `.env.local` file at the project root and add non-sensitive configuration values. Example:
+Create a `.env.local` file with your credentials:
 
 ```text
-# Show or hide images in the UI (true/false)
-NEXT_PUBLIC_SHOW_IMAGES=true
+# Database (Neon PostgreSQL)
+DATABASE_URL="your_neon_connection_string"
 
-# Optional: base url for non-secret services
-NEXT_PUBLIC_API_URL=https://api.example.com
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxx
+CLERK_SECRET_KEY=sk_test_xxx
+
+# Google Gemini AI
+GOOGLE_API_KEY=your_google_api_key
+
+# Resend Email
+RESEND_API_KEY=re_xxx
+
+# PhonePe Payment
+PHONEPE_MERCHANT_ID=your_merchant_id
+PHONEPE_SALT_KEY=your_salt_key
+PHONEPE_SALT_INDEX=1
+PHONEPE_ENV=sandbox
 ```
 
-3. Run the app
+3. **Setup database**
+
+```bash
+npx prisma generate
+npx prisma db push
+npx prisma db seed
+```
+
+4. **Run the app**
 
 ```bash
 npm run dev
-# or for a production build
-npm run build && npm start
 ```
 
 Open http://localhost:3000 (public) and http://localhost:3000/admin-panel (admin).
 
-## What this app does (short)
+## Project Structure
 
-- Fetches news server-side (Finlight integration).
-- Provides a public reader and an admin dashboard with a two-column comparison preview.
-- AI summarization endpoint with a safe local fallback; LLM usage is optional and only enabled when server-side keys are configured (store keys securely, not in this repo).
-- Image proxy endpoint for normalizing external images.
-- Bookmarks persisted in-browser (localStorage) and visible in the admin panel.
+- `src/app/` — App Router pages and API routes
+  - `admin-panel/` — Admin dashboard pages
+  - `api/` — Server API routes
+  - `dashboard/` — User dashboard
+  - `tools/` — AI tools directory
+- `src/components/` — React components
+  - `admin-panel/` — Admin UI components
+  - `tools/` — Tool display components
+  - `ui/` — Shared UI components
+- `src/lib/` — Utilities and services
+  - `ai-newsletter.ts` — AI newsletter generation
+  - `db.ts` — Prisma database client
+  - `phonepe.ts` — Payment integration
 
-## Project layout (high level)
+## Key Features
 
-- `src/app/` — App Router routes and page-level components
-	- `admin-panel/` — admin pages: dashboard, news comparison, bookmarks, etc.
-	- `api/` — server routes (image proxy, summary endpoint, finlight wrappers)
-- `src/components/` — UI components and small feature groups
-	- `news/` — `NewsTile`, `NewsGrid`, `NewsComparison`
-	- `admin-panel/` — sidebar, layout, menu
-	- `ui/` — `SmartImage`, buttons, cards, etc.
-- `src/lib/` — application libraries and helpers
-	- `api/news.ts` — `NewsArticle` types and fetching helpers
-	- `finlight.ts` — server-side Finlight integration
-	- `app-config.ts` — runtime flags (e.g., `SHOW_IMAGES`)
+### Newsletter System
+- Auto-generated newsletters at 8AM, 2PM, and 6PM IST
+- AI-powered content curation based on user interests
+- Rich HTML email templates
 
-## Important files to review
+### Subscription Tiers
+- **Free** - Access to curated tools
+- **Pro (₹3/month)** - AI summaries and personalized recommendations
+- **Premium (₹10/month)** - All features + exclusive tools
 
-- `src/components/news/news-comparison.tsx` — admin two-column preview + summary UI
-- `src/components/ui/smart-image.tsx` — image proxy + fallback behavior
-- `src/app/api/news/summary/route.ts` — summary API (local fallback + guarded LLM path)
-- `src/app/api/image-proxy/route.ts` — server route that proxies external images
-
-## Toggle images (safe, no secrets)
-
-You can hide all images in the UI by setting:
-
-```text
-NEXT_PUBLIC_SHOW_IMAGES=false
-```
-
-This flag is read by `src/lib/app-config.ts` and respected by the image components.
-
-## Notes on secrets and LLM usage
-
-- The project supports an optional LLM path in the summary API. Do NOT add any API keys to source control. Configure secret keys in your deployment environment (Vercel, Netlify, etc.).
-- This README does not list any private keys or endpoints.
+### Admin Dashboard
+- Add/edit AI tools
+- Manage subscribers
+- View newsletter history
+- Send manual newsletters
 
 ## Developer tips
 

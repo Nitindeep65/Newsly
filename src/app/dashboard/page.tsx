@@ -1,0 +1,551 @@
+"use client";
+
+import { useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ContentLayout } from "@/components/admin-panel/content-layout";
+import {
+  Cpu,
+  TrendingUp,
+  Bitcoin,
+  Rocket,
+  Zap,
+  Lock,
+  Check,
+  Clock,
+  Mail,
+  Eye,
+  Crown,
+  Sparkles,
+  Loader2,
+} from "lucide-react";
+
+export const dynamic = "force-dynamic";
+
+// Subscription tier types
+type SubscriptionTier = "FREE" | "PRO" | "PREMIUM";
+
+// Interest category with minimum tier requirement
+interface Interest {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  field: keyof SubscriberPreferences;
+  minTier: SubscriptionTier;
+}
+
+interface SubscriberPreferences {
+  aiTools: boolean;
+  stockMarket: boolean;
+  crypto: boolean;
+  startups: boolean;
+  productivity: boolean;
+}
+
+interface Subscriber {
+  id: string;
+  email: string;
+  subscriptionTier: SubscriptionTier;
+  aiTools: boolean;
+  stockMarket: boolean;
+  crypto: boolean;
+  startups: boolean;
+  productivity: boolean;
+}
+
+// Tier hierarchy for comparison
+const TIER_LEVEL: Record<SubscriptionTier, number> = {
+  FREE: 0,
+  PRO: 1,
+  PREMIUM: 2,
+};
+
+// Newsletter delivery times
+const DELIVERY_SCHEDULE = [
+  { time: "8:00 AM IST", label: "Morning Digest", description: "Start your day with the latest AI news" },
+  { time: "2:00 PM IST", label: "Afternoon Update", description: "Mid-day insights and trending topics" },
+  { time: "6:00 PM IST", label: "Evening Roundup", description: "End-of-day summary and key takeaways" },
+];
+
+// All available interests with tier requirements
+const INTERESTS: Interest[] = [
+  {
+    id: "ai-tools",
+    name: "AI Tools & News",
+    description: "Latest AI tools, updates, and breakthroughs",
+    icon: <Cpu className="h-5 w-5" />,
+    field: "aiTools",
+    minTier: "FREE",
+  },
+  {
+    id: "stock-market",
+    name: "Stock Market",
+    description: "Market trends, analysis, and investment insights",
+    icon: <TrendingUp className="h-5 w-5" />,
+    field: "stockMarket",
+    minTier: "FREE",
+  },
+  {
+    id: "crypto",
+    name: "Crypto & Web3",
+    description: "Cryptocurrency news and blockchain updates",
+    icon: <Bitcoin className="h-5 w-5" />,
+    field: "crypto",
+    minTier: "PRO",
+  },
+  {
+    id: "startups",
+    name: "Startups & Funding",
+    description: "Startup news, funding rounds, and founder stories",
+    icon: <Rocket className="h-5 w-5" />,
+    field: "startups",
+    minTier: "PRO",
+  },
+  {
+    id: "productivity",
+    name: "Productivity Hacks",
+    description: "Tips, tools, and strategies to boost productivity",
+    icon: <Zap className="h-5 w-5" />,
+    field: "productivity",
+    minTier: "PREMIUM",
+  },
+];
+
+// Tier benefits for display
+const TIER_INFO: Record<SubscriptionTier, { name: string; price: string; topics: number; color: string }> = {
+  FREE: { name: "Free", price: "₹0/month", topics: 2, color: "bg-gray-500" },
+  PRO: { name: "Pro", price: "₹3/month", topics: 4, color: "bg-blue-500" },
+  PREMIUM: { name: "Premium", price: "₹10/month", topics: 5, color: "bg-amber-500" },
+};
+
+export default function DashboardPage() {
+  const { user, isLoaded } = useUser();
+  const [subscriber, setSubscriber] = useState<Subscriber | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [_saving, setSaving] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [_requiredTier, setRequiredTier] = useState<SubscriptionTier>("PRO");
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      fetchSubscriber();
+    }
+  }, [isLoaded, user]);
+
+  const fetchSubscriber = async () => {
+    try {
+      const response = await fetch("/api/subscribers/me");
+      if (response.ok) {
+        const data = await response.json();
+        setSubscriber(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch subscriber:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isInterestAvailable = (interest: Interest): boolean => {
+    if (!subscriber) return false;
+    return TIER_LEVEL[subscriber.subscriptionTier] >= TIER_LEVEL[interest.minTier];
+  };
+
+  const toggleInterest = async (interest: Interest) => {
+    if (!subscriber) return;
+
+    // Check if interest is available for current tier
+    if (!isInterestAvailable(interest)) {
+      setRequiredTier(interest.minTier);
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const currentValue = subscriber[interest.field];
+      const response = await fetch("/api/subscribers/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [interest.field]: !currentValue }),
+      });
+
+      if (response.ok) {
+        const updated = await response.json();
+        setSubscriber(updated);
+      }
+    } catch (error) {
+      console.error("Failed to update preference:", error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUpgrade = (tier: SubscriptionTier) => {
+    // PhonePe checkout links
+    const checkoutUrls: Record<SubscriptionTier, string> = {
+      FREE: "#",
+      PRO: "/api/phonepe/checkout?plan=PRO",
+      PREMIUM: "/api/phonepe/checkout?plan=PREMIUM",
+    };
+    window.location.href = checkoutUrls[tier];
+  };
+
+  if (!isLoaded || loading) {
+    return (
+      <ContentLayout title="Dashboard">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </ContentLayout>
+    );
+  }
+
+  if (!subscriber) {
+    return (
+      <ContentLayout title="Dashboard">
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+          <Mail className="h-12 w-12 text-muted-foreground" />
+          <h2 className="text-xl font-semibold">No Subscription Found</h2>
+          <p className="text-muted-foreground text-center max-w-md">
+            You haven&apos;t subscribed to our newsletter yet. Subscribe to get personalized AI news delivered to your inbox.
+          </p>
+          <Button onClick={() => window.location.href = "/subscribe"}>
+            Subscribe Now
+          </Button>
+        </div>
+      </ContentLayout>
+    );
+  }
+
+  const currentTier = subscriber.subscriptionTier;
+  const tierInfo = TIER_INFO[currentTier];
+
+  return (
+    <ContentLayout title="Dashboard">
+      <div className="space-y-6">
+        {/* Current Plan Banner */}
+        <Card className="border-2 border-primary/20">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${tierInfo.color}`}>
+                  <Crown className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Your Plan: {tierInfo.name}</CardTitle>
+                  <CardDescription>{tierInfo.price} • {tierInfo.topics} topics available</CardDescription>
+                </div>
+              </div>
+              {currentTier !== "PREMIUM" && (
+                <Button onClick={() => setShowUpgradeModal(true)} size="sm">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Upgrade
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+        </Card>
+
+        {/* Main Content Grid */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Interests Section - Takes 2 columns */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Your Interests</h2>
+              <p className="text-sm text-muted-foreground">
+                Select topics to include in your newsletter
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {INTERESTS.map((interest) => {
+                const isAvailable = isInterestAvailable(interest);
+                const isSelected = subscriber[interest.field];
+
+                return (
+                  <Card
+                    key={interest.id}
+                    className={`cursor-pointer transition-all ${
+                      !isAvailable
+                        ? "opacity-60 border-dashed"
+                        : isSelected
+                        ? "border-primary bg-primary/5"
+                        : "hover:border-primary/50"
+                    }`}
+                    onClick={() => toggleInterest(interest)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`p-2 rounded-lg ${
+                            isSelected && isAvailable
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
+                          }`}
+                        >
+                          {interest.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium truncate">{interest.name}</h3>
+                            {!isAvailable && (
+                              <Badge variant="secondary" className="text-xs shrink-0">
+                                <Lock className="h-3 w-3 mr-1" />
+                                {interest.minTier}
+                              </Badge>
+                            )}
+                            {isAvailable && isSelected && (
+                              <Check className="h-4 w-4 text-primary shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {interest.description}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sidebar - Takes 1 column */}
+          <div className="space-y-4">
+            {/* Delivery Schedule */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Delivery Schedule
+                </CardTitle>
+                <CardDescription>
+                  Your newsletter arrives at these times
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {DELIVERY_SCHEDULE.map((schedule, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-primary" />
+                    <div>
+                      <p className="font-medium text-sm">{schedule.time}</p>
+                      <p className="text-xs text-muted-foreground">{schedule.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Newsletter Preview */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Newsletter Preview
+                </CardTitle>
+                <CardDescription>
+                  See how your newsletter looks
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowPreviewModal(true)}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  View Sample Newsletter
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Subscription Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Email</span>
+                  <span className="font-medium truncate ml-2">{subscriber.email}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Plan</span>
+                  <Badge variant="secondary">{currentTier}</Badge>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Active Topics</span>
+                  <span className="font-medium">
+                    {INTERESTS.filter((i) => subscriber[i.field] && isInterestAvailable(i)).length}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Upgrade Modal */}
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Upgrade Your Plan
+            </DialogTitle>
+            <DialogDescription>
+              Unlock more topics and features with a premium subscription
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {(["PRO", "PREMIUM"] as SubscriptionTier[]).map((tier) => {
+              const info = TIER_INFO[tier];
+              const isCurrentTier = tier === currentTier;
+              const isBetterTier = TIER_LEVEL[tier] > TIER_LEVEL[currentTier];
+              const availableInterests = INTERESTS.filter(
+                (i) => TIER_LEVEL[tier] >= TIER_LEVEL[i.minTier]
+              );
+
+              return (
+                <div
+                  key={tier}
+                  className={`p-4 rounded-lg border-2 ${
+                    isCurrentTier
+                      ? "border-primary bg-primary/5"
+                      : "border-muted hover:border-primary/50"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1.5 rounded ${info.color}`}>
+                        <Crown className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{info.name}</h3>
+                        <p className="text-sm text-muted-foreground">{info.price}</p>
+                      </div>
+                    </div>
+                    {isCurrentTier ? (
+                      <Badge>Current</Badge>
+                    ) : isBetterTier ? (
+                      <Button size="sm" onClick={() => handleUpgrade(tier)}>
+                        Upgrade
+                      </Button>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {availableInterests.map((interest) => (
+                      <Badge key={interest.id} variant="secondary" className="text-xs">
+                        {interest.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Newsletter Preview Modal */}
+      <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Newsletter Preview</DialogTitle>
+            <DialogDescription>
+              This is how your personalized newsletter will look in your inbox
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="border rounded-lg p-6 bg-white dark:bg-zinc-900">
+            {/* Email Header */}
+            <div className="text-center border-b pb-4 mb-4">
+              <h1 className="text-2xl font-bold text-primary">AI Tools Weekly</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Your personalized tech digest
+              </p>
+            </div>
+
+            {/* Email Content */}
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm">Hi {user?.firstName || "there"},</p>
+                <p className="text-sm mt-2">
+                  Here&apos;s your personalized newsletter based on your selected interests.
+                </p>
+              </div>
+
+              {/* Sample Section */}
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <h3 className="font-semibold flex items-center gap-2 mb-2">
+                  <Cpu className="h-4 w-4" />
+                  AI Tools & News
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="p-2 bg-background rounded">
+                    <p className="font-medium">🚀 OpenAI releases GPT-5 with breakthrough reasoning</p>
+                    <p className="text-muted-foreground text-xs mt-1">
+                      The latest model shows significant improvements in complex problem solving...
+                    </p>
+                  </div>
+                  <div className="p-2 bg-background rounded">
+                    <p className="font-medium">💡 Claude 4 introduces multi-modal capabilities</p>
+                    <p className="text-muted-foreground text-xs mt-1">
+                      Anthropic&apos;s new release brings image understanding to their AI assistant...
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {subscriber.stockMarket && (
+                <div className="border rounded-lg p-4 bg-muted/30">
+                  <h3 className="font-semibold flex items-center gap-2 mb-2">
+                    <TrendingUp className="h-4 w-4" />
+                    Stock Market
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="p-2 bg-background rounded">
+                      <p className="font-medium">📈 NVIDIA hits new all-time high on AI demand</p>
+                      <p className="text-muted-foreground text-xs mt-1">
+                        Strong earnings drive chip maker to record valuation...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="text-center pt-4 border-t text-xs text-muted-foreground">
+                <p>You&apos;re receiving this because you subscribed to AI Tools Weekly.</p>
+                <p className="mt-1">
+                  <a href="#" className="text-primary hover:underline">Manage preferences</a>
+                  {" • "}
+                  <a href="#" className="text-primary hover:underline">Unsubscribe</a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setShowPreviewModal(false)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </ContentLayout>
+  );
+}
