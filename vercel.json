@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/newsletter/auto",
-      "schedule": "59 19 * * *"
+      "schedule": "10 20 * * *"
     }
   ]
 }
