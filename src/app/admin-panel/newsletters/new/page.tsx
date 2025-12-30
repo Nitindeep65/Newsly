@@ -101,18 +101,17 @@ export default function CreateNewsletterPage() {
 
   const fetchData = async () => {
     try {
-      const [toolsRes, subsRes] = await Promise.all([
-        fetch('/api/tools?limit=50'),
-        fetch('/api/subscribers?includeTopics=true')
-      ]);
-      
-      const toolsData = await toolsRes.json();
+      // Fetch subscribers with topics
+      const subsRes = await fetch('/api/subscribers?includeTopics=true');
       const subsData = await subsRes.json();
       
       console.log('Subscribers API response:', subsData);
       console.log('First subscriber topics:', subsData.subscribers?.[0]);
       
-      setTools(toolsData.tools || []);
+      if (subsData.error) {
+        console.error('Subscribers API error:', subsData.error);
+      }
+      
       setSubscribers(subsData.subscribers || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
