@@ -129,8 +129,12 @@ export default function DashboardPage() {
 
       const counts = topicMapping.map(topic => ({
         ...topic,
-        count: subsData.subscribers?.filter((s: Record<string, boolean>) => s[topic.id] === true).length || 0
+        count: subsData.subscribers?.filter((s: Record<string, unknown>) => s[topic.id] === true).length || 0
       })).sort((a, b) => b.count - a.count);
+
+      // Debug log
+      console.log('Subscribers with topics:', subsData.subscribers?.slice(0, 2));
+      console.log('Topic counts:', counts);
 
       setTopicCounts(counts);
       setRecentNewsletters(newsData.newsletters?.slice(0, 5) || []);

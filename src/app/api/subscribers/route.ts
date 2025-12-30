@@ -16,36 +16,40 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const includeTopics = searchParams.get('includeTopics') === 'true';
 
+    // Build select object
+    const selectFields: Record<string, boolean> = {
+      id: true,
+      email: true,
+      name: true,
+      tier: true,
+      verified: true,
+      subscribedAt: true,
+    };
+
+    // Add topic fields if requested
+    if (includeTopics) {
+      selectFields.topicAiTools = true;
+      selectFields.topicStockMarket = true;
+      selectFields.topicCrypto = true;
+      selectFields.topicStartups = true;
+      selectFields.topicProductivity = true;
+      selectFields.topicMutualFunds = true;
+      selectFields.topicIpoNews = true;
+      selectFields.topicForex = true;
+      selectFields.topicCommodities = true;
+      selectFields.topicFintech = true;
+      selectFields.topicEcommerce = true;
+      selectFields.topicCloudComputing = true;
+      selectFields.topicCybersecurity = true;
+      selectFields.topicHealthWellness = true;
+      selectFields.topicCareerGrowth = true;
+      selectFields.topicPersonalFinance = true;
+      selectFields.topicWorldNews = true;
+    }
+
     const subscribers = await db.subscriber.findMany({
       orderBy: { subscribedAt: 'desc' },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        tier: true,
-        verified: true,
-        subscribedAt: true,
-        ...(includeTopics && {
-          topicAiTools: true,
-          topicStockMarket: true,
-          topicCrypto: true,
-          topicStartups: true,
-          topicProductivity: true,
-          // New topic fields
-          topicMutualFunds: true,
-          topicIpoNews: true,
-          topicForex: true,
-          topicCommodities: true,
-          topicFintech: true,
-          topicEcommerce: true,
-          topicCloudComputing: true,
-          topicCybersecurity: true,
-          topicHealthWellness: true,
-          topicCareerGrowth: true,
-          topicPersonalFinance: true,
-          topicWorldNews: true,
-        }),
-      }
+      select: selectFields,
     });
 
     // Count by tier
