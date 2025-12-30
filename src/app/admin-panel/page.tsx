@@ -48,6 +48,13 @@ interface DashboardStats {
   revenue: number;
 }
 
+interface TopicCount {
+  id: string;
+  name: string;
+  count: number;
+  icon: string;
+}
+
 interface Newsletter {
   id: string;
   subject: string;
@@ -66,6 +73,7 @@ export default function DashboardPage() {
     revenue: 0,
   });
   const [recentNewsletters, setRecentNewsletters] = useState<Newsletter[]>([]);
+  const [topicCounts, setTopicCounts] = useState<TopicCount[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,7 +83,7 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     try {
       const [subsRes, newsRes] = await Promise.all([
-        fetch('/api/subscribers'),
+        fetch('/api/subscribers?includeTopics=true'),
         fetch('/api/newsletter')
       ]);
       
@@ -98,6 +106,33 @@ export default function DashboardPage() {
         revenue,
       });
 
+      // Calculate topic counts from subscribers
+      const topicMapping = [
+        { id: 'topicStockMarket', name: 'Stocks & Markets', icon: '📈' },
+        { id: 'topicAiTools', name: 'AI & Tech', icon: '🤖' },
+        { id: 'topicCrypto', name: 'Crypto', icon: '₿' },
+        { id: 'topicStartups', name: 'Startups', icon: '🚀' },
+        { id: 'topicProductivity', name: 'Productivity', icon: '⚡' },
+        { id: 'topicMutualFunds', name: 'Mutual Funds', icon: '📊' },
+        { id: 'topicIpoNews', name: 'IPO News', icon: '🎯' },
+        { id: 'topicForex', name: 'Forex', icon: '💱' },
+        { id: 'topicCommodities', name: 'Commodities', icon: '🏭' },
+        { id: 'topicFintech', name: 'Fintech', icon: '💳' },
+        { id: 'topicEcommerce', name: 'E-commerce', icon: '🛒' },
+        { id: 'topicCloudComputing', name: 'Cloud & SaaS', icon: '☁️' },
+        { id: 'topicCybersecurity', name: 'Cybersecurity', icon: '🔒' },
+        { id: 'topicHealthWellness', name: 'Health & Wellness', icon: '💪' },
+        { id: 'topicCareerGrowth', name: 'Career & Jobs', icon: '💼' },
+        { id: 'topicPersonalFinance', name: 'Personal Finance', icon: '💰' },
+        { id: 'topicWorldNews', name: 'World News', icon: '🌍' },
+      ];
+
+      const counts = topicMapping.map(topic => ({
+        ...topic,
+        count: subsData.subscribers?.filter((s: Record<string, boolean>) => s[topic.id] === true).length || 0
+      })).sort((a, b) => b.count - a.count);
+
+      setTopicCounts(counts);
       setRecentNewsletters(newsData.newsletters?.slice(0, 5) || []);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
@@ -475,6 +510,73 @@ export default function DashboardPage() {
                 </Card>
               </motion.div>
             </div>
+
+            {/* Topic Interests Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65 }}
+            >
+              <Card className="border-0 shadow-lg dark:bg-zinc-900/50">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Flame className="h-5 w-5 text-orange-500" />
+                        Subscriber Interests
+                      </CardTitle>
+                      <CardDescription>Topics selected by your audience</CardDescription>
+                    </div>
+                    <Badge variant="secondary">{topicCounts.reduce((sum, t) => sum + t.count, 0)} total selections</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                      {[...Array(8)].map((_, i) => (
+                        <div key={i} className="h-16 bg-stone-100 dark:bg-zinc-800 rounded-lg animate-pulse" />
+                      ))}
+                    </div>
+                  ) : topicCounts.every(t => t.count === 0) ? (
+                    <div className="text-center py-8">
+                      <Target className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                      <p className="text-sm text-muted-foreground">No topic selections yet</p>
+                      <p className="text-xs text-muted-foreground mt-1">Subscribers will choose their interests when signing up</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                      {topicCounts.map((topic, index) => (
+                        <motion.div
+                          key={topic.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.7 + index * 0.03 }}
+                          className="flex items-center gap-3 p-3 rounded-lg bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-colors"
+                        >
+                          <span className="text-2xl">{topic.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{topic.name}</p>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 h-1.5 bg-stone-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: stats.subscribers ? `${(topic.count / stats.subscribers) * 100}%` : '0%' }}
+                                  transition={{ delay: 0.8 + index * 0.03, duration: 0.5 }}
+                                  className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full"
+                                />
+                              </div>
+                              <span className="text-sm font-bold text-violet-600 dark:text-violet-400 min-w-[2rem] text-right">
+                                {topic.count}
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Performance Overview */}
             <motion.div
