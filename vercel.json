@@ -6,10 +6,6 @@
     },
     {
       "path": "/api/newsletter/auto",
-      "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/newsletter/auto",
       "schedule": "0 12 * * *"
     }
   ]
