@@ -265,6 +265,7 @@ async function sendToSubscribers(
   
   for (let i = 0; i < subscribers.length; i += batchSize) {
     const batch = subscribers.slice(i, i + batchSize);
+    console.log(`Sending newsletter to batch:`, batch.map(s => s.email));
 
     const emailPromises = batch.map(async (subscriber) => {
       try {
@@ -292,8 +293,9 @@ async function sendToSubscribers(
         });
 
         sent++;
+        console.log(`✅ Sent to: ${subscriber.email}`);
       } catch (error) {
-        console.error(`Failed to send to ${subscriber.email}:`, error);
+        console.error(`❌ Failed to send to ${subscriber.email}:`, error);
 
         await db.emailLog.create({
           data: {
