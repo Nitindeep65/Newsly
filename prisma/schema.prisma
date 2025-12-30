@@ -175,6 +175,21 @@ enum NewsletterTopic {
   CRYPTO
   STARTUPS
   PRODUCTIVITY
+  // Stock Market Related
+  MUTUAL_FUNDS
+  IPO_NEWS
+  FOREX
+  COMMODITIES
+  // Tech & Business
+  FINTECH
+  ECOMMERCE
+  CLOUD_COMPUTING
+  CYBERSECURITY
+  // Lifestyle & Growth
+  HEALTH_WELLNESS
+  CAREER_GROWTH
+  PERSONAL_FINANCE
+  WORLD_NEWS
 }
 
 // Email subscribers (separate from User for non-authenticated subscribers)
@@ -203,6 +218,21 @@ model Subscriber {
   topicCrypto       Boolean  @default(false)
   topicStartups     Boolean  @default(false)
   topicProductivity Boolean  @default(false)
+  // Stock Market Related
+  topicMutualFunds  Boolean  @default(false)
+  topicIpoNews      Boolean  @default(false)
+  topicForex        Boolean  @default(false)
+  topicCommodities  Boolean  @default(false)
+  // Tech & Business
+  topicFintech      Boolean  @default(false)
+  topicEcommerce    Boolean  @default(false)
+  topicCloudComputing Boolean @default(false)
+  topicCybersecurity Boolean  @default(false)
+  // Lifestyle & Growth
+  topicHealthWellness Boolean @default(false)
+  topicCareerGrowth Boolean  @default(false)
+  topicPersonalFinance Boolean @default(false)
+  topicWorldNews    Boolean  @default(false)
   personalizedDigest Boolean @default(false)  // Premium only
   
   // Email Preferences

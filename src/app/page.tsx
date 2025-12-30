@@ -6,18 +6,59 @@ import { motion } from 'framer-motion';
 import { 
   Sparkles, CheckCircle2, ArrowRight, 
   TrendingUp, Clock, Target, ChevronRight,
-  Zap, BarChart3, Star, Coffee, Flame, Search
+  Zap, BarChart3, Star, Coffee, Flame, Search,
+  PieChart, Globe, DollarSign, Shield, Heart,
+  Briefcase, Building, Wallet, ChevronDown, LucideIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
+interface Topic {
+  icon: LucideIcon;
+  name: string;
+  desc: string;
+  bg: string;
+  text: string;
+  border: string;
+  keywords: string[];
+  featured?: boolean;
+}
+
+const TOPICS: Topic[] = [
+  // Featured Topics (shown first)
+  { icon: TrendingUp, name: "Stocks", desc: "Market trends", bg: "bg-emerald-500/10", text: "text-emerald-600", border: "border-emerald-200", keywords: ["stocks", "market", "nse", "bse", "trading", "investment", "shares", "sensex", "nifty"], featured: true },
+  { icon: Sparkles, name: "AI & Tech", desc: "New tools", bg: "bg-violet-500/10", text: "text-violet-600", border: "border-violet-200", keywords: ["ai", "tech", "technology", "tools", "software", "artificial intelligence", "machine learning"], featured: true },
+  { icon: BarChart3, name: "Crypto", desc: "DeFi news", bg: "bg-amber-500/10", text: "text-amber-600", border: "border-amber-200", keywords: ["crypto", "bitcoin", "ethereum", "defi", "web3", "blockchain", "nft"], featured: true },
+  { icon: Zap, name: "Startups", desc: "Funding", bg: "bg-sky-500/10", text: "text-sky-600", border: "border-sky-200", keywords: ["startups", "funding", "venture", "entrepreneur", "business", "vc", "seed"], featured: true },
+  
+  // Stock Market Related
+  { icon: PieChart, name: "Mutual Funds", desc: "Fund insights", bg: "bg-blue-500/10", text: "text-blue-600", border: "border-blue-200", keywords: ["mutual funds", "sip", "etf", "investment", "portfolio", "amc", "nav"] },
+  { icon: Flame, name: "IPO News", desc: "New listings", bg: "bg-red-500/10", text: "text-red-600", border: "border-red-200", keywords: ["ipo", "listing", "allotment", "grey market", "public issue", "ofs"] },
+  { icon: Globe, name: "Forex", desc: "Currency markets", bg: "bg-teal-500/10", text: "text-teal-600", border: "border-teal-200", keywords: ["forex", "currency", "dollar", "rupee", "exchange rate", "usd", "inr"] },
+  { icon: Star, name: "Commodities", desc: "Gold & Oil", bg: "bg-yellow-500/10", text: "text-yellow-600", border: "border-yellow-200", keywords: ["gold", "silver", "crude oil", "commodities", "mcx", "metals"] },
+  
+  // Tech & Business
+  { icon: DollarSign, name: "Fintech", desc: "Digital finance", bg: "bg-green-500/10", text: "text-green-600", border: "border-green-200", keywords: ["fintech", "payments", "upi", "digital banking", "neobank", "lending"] },
+  { icon: Building, name: "E-commerce", desc: "Online retail", bg: "bg-orange-500/10", text: "text-orange-600", border: "border-orange-200", keywords: ["ecommerce", "amazon", "flipkart", "retail", "d2c", "online shopping"] },
+  { icon: Zap, name: "Cloud & SaaS", desc: "Tech infra", bg: "bg-indigo-500/10", text: "text-indigo-600", border: "border-indigo-200", keywords: ["cloud", "aws", "azure", "saas", "infrastructure", "devops"] },
+  { icon: Shield, name: "Cybersecurity", desc: "Digital safety", bg: "bg-slate-500/10", text: "text-slate-600", border: "border-slate-200", keywords: ["cybersecurity", "hacking", "privacy", "security", "data breach", "infosec"] },
+  
+  // Lifestyle & Growth
+  { icon: Heart, name: "Health", desc: "Wellness tips", bg: "bg-pink-500/10", text: "text-pink-600", border: "border-pink-200", keywords: ["health", "wellness", "fitness", "nutrition", "mental health", "lifestyle"] },
+  { icon: Briefcase, name: "Career", desc: "Job trends", bg: "bg-purple-500/10", text: "text-purple-600", border: "border-purple-200", keywords: ["career", "jobs", "hiring", "layoffs", "salary", "remote work", "skills"] },
+  { icon: Wallet, name: "Personal Finance", desc: "Money tips", bg: "bg-lime-500/10", text: "text-lime-600", border: "border-lime-200", keywords: ["personal finance", "savings", "tax", "budget", "insurance", "retirement"] },
+  { icon: Target, name: "Productivity", desc: "Life hacks", bg: "bg-rose-500/10", text: "text-rose-600", border: "border-rose-200", keywords: ["productivity", "efficiency", "workflow", "automation", "habits", "time management"] },
+  { icon: Globe, name: "World News", desc: "Global events", bg: "bg-cyan-500/10", text: "text-cyan-600", border: "border-cyan-200", keywords: ["world news", "global", "international", "politics", "economy", "geopolitics"] },
+];
+
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [topicSearch, setTopicSearch] = useState('');
+  const [showAllTopics, setShowAllTopics] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -66,24 +107,25 @@ export default function LandingPage() {
     }
   };
 
-  const topics = [
-    { icon: TrendingUp, name: "Stocks", desc: "Market trends", bg: "bg-emerald-500/10", text: "text-emerald-600", border: "border-emerald-200", keywords: ["stocks", "market", "nse", "bse", "trading", "investment", "shares"] },
-    { icon: Sparkles, name: "AI & Tech", desc: "New tools", bg: "bg-violet-500/10", text: "text-violet-600", border: "border-violet-200", keywords: ["ai", "tech", "technology", "tools", "software", "artificial intelligence", "machine learning"] },
-    { icon: BarChart3, name: "Crypto", desc: "DeFi news", bg: "bg-amber-500/10", text: "text-amber-600", border: "border-amber-200", keywords: ["crypto", "bitcoin", "ethereum", "defi", "web3", "blockchain", "nft"] },
-    { icon: Zap, name: "Startups", desc: "Funding", bg: "bg-sky-500/10", text: "text-sky-600", border: "border-sky-200", keywords: ["startups", "funding", "venture", "entrepreneur", "business", "vc", "seed"] },
-    { icon: Target, name: "Productivity", desc: "Life hacks", bg: "bg-rose-500/10", text: "text-rose-600", border: "border-rose-200", keywords: ["productivity", "efficiency", "workflow", "automation", "habits", "time management"] },
-  ];
-
   // Filter topics based on search
   const filteredTopics = useMemo(() => {
-    if (!topicSearch.trim()) return topics;
-    const search = topicSearch.toLowerCase();
-    return topics.filter(topic => 
-      topic.name.toLowerCase().includes(search) ||
-      topic.desc.toLowerCase().includes(search) ||
-      topic.keywords.some(kw => kw.includes(search))
-    );
-  }, [topicSearch]);
+    // If searching, filter by search term
+    if (topicSearch.trim()) {
+      const search = topicSearch.toLowerCase();
+      return TOPICS.filter(topic => 
+        topic.name.toLowerCase().includes(search) ||
+        topic.desc.toLowerCase().includes(search) ||
+        topic.keywords.some(kw => kw.includes(search))
+      );
+    }
+    
+    // If not searching, show 4 featured topics or all if expanded
+    if (!showAllTopics) {
+      return TOPICS.filter(t => t.featured);
+    }
+    
+    return TOPICS;
+  }, [topicSearch, showAllTopics]);
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
@@ -231,7 +273,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {filteredTopics.length > 0 ? filteredTopics.map((topic, i) => (
               <motion.div
                 key={topic.name}
@@ -264,6 +306,31 @@ export default function LandingPage() {
               </div>
             )}
           </div>
+
+          {/* Show more/less button */}
+          {!topicSearch && (
+            <motion.div 
+              className="text-center mt-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Button
+                variant="outline"
+                onClick={() => setShowAllTopics(!showAllTopics)}
+                className="rounded-full px-6 border-stone-300 dark:border-zinc-700 hover:bg-stone-100 dark:hover:bg-zinc-800"
+              >
+                {showAllTopics ? (
+                  <>Show less</>
+                ) : (
+                  <>
+                    +{TOPICS.length - 4} more topics
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  </>
+                )}
+              </Button>
+            </motion.div>
+          )}
         </div>
       </section>
 
@@ -290,7 +357,7 @@ export default function LandingPage() {
                     <p className="text-3xl font-bold text-stone-900 dark:text-white">₹0<span className="text-base font-normal text-stone-500">/mo</span></p>
                   </div>
                   <ul className="space-y-2.5 mb-6 text-sm">
-                    {["2 topics", "Daily digest", "9 AM delivery"].map((f) => (
+                    {["3 topics", "Daily digest", "9 AM delivery"].map((f) => (
                       <li key={f} className="flex items-center gap-2 text-stone-700 dark:text-zinc-300">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500" /> {f}
                       </li>
@@ -320,7 +387,7 @@ export default function LandingPage() {
                     <p className="text-3xl font-bold text-stone-900 dark:text-white">₹3<span className="text-base font-normal text-stone-500">/mo</span></p>
                   </div>
                   <ul className="space-y-2.5 mb-6 text-sm">
-                    {["4 topics", "Deeper insights", "Priority send", "No ads"].map((f) => (
+                    {["7 topics", "Deeper insights", "Priority send", "No ads"].map((f) => (
                       <li key={f} className="flex items-center gap-2 text-stone-700 dark:text-zinc-300">
                         <CheckCircle2 className="w-4 h-4 text-amber-500" /> {f}
                       </li>
@@ -347,7 +414,7 @@ export default function LandingPage() {
                     <p className="text-3xl font-bold text-stone-900 dark:text-white">₹10<span className="text-base font-normal text-stone-500">/mo</span></p>
                   </div>
                   <ul className="space-y-2.5 mb-6 text-sm">
-                    {["All 5 topics", "Personal digest", "Exclusive tips", "Early access"].map((f) => (
+                    {["All 17 topics", "Personal digest", "Exclusive tips", "Early access"].map((f) => (
                       <li key={f} className="flex items-center gap-2 text-stone-700 dark:text-zinc-300">
                         <CheckCircle2 className="w-4 h-4 text-violet-500" /> {f}
                       </li>

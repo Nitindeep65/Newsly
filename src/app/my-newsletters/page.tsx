@@ -39,7 +39,16 @@ import {
   Eye,
   TrendingDown,
   Activity,
+  Search,
+  PieChart,
+  Globe,
+  DollarSign,
+  Heart,
+  Briefcase,
+  Building,
+  Wallet,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +63,8 @@ interface Interest {
   minTier: SubscriptionTier;
   color: string;
   gradient: string;
+  keywords: string[];
+  category: "featured" | "finance" | "tech" | "lifestyle";
 }
 
 interface SubscriberPreferences {
@@ -62,6 +73,21 @@ interface SubscriberPreferences {
   crypto: boolean;
   startups: boolean;
   productivity: boolean;
+  // Stock Market Related
+  mutualFunds: boolean;
+  ipoNews: boolean;
+  forex: boolean;
+  commodities: boolean;
+  // Tech & Business
+  fintech: boolean;
+  ecommerce: boolean;
+  cloudComputing: boolean;
+  cybersecurity: boolean;
+  // Lifestyle & Growth
+  healthWellness: boolean;
+  careerGrowth: boolean;
+  personalFinance: boolean;
+  worldNews: boolean;
 }
 
 interface Subscriber {
@@ -73,6 +99,21 @@ interface Subscriber {
   crypto: boolean;
   startups: boolean;
   productivity: boolean;
+  // Stock Market Related
+  mutualFunds: boolean;
+  ipoNews: boolean;
+  forex: boolean;
+  commodities: boolean;
+  // Tech & Business
+  fintech: boolean;
+  ecommerce: boolean;
+  cloudComputing: boolean;
+  cybersecurity: boolean;
+  // Lifestyle & Growth
+  healthWellness: boolean;
+  careerGrowth: boolean;
+  personalFinance: boolean;
+  worldNews: boolean;
 }
 
 const TIER_LEVEL: Record<SubscriptionTier, number> = {
@@ -93,33 +134,34 @@ const TIER_INFO: Record<SubscriptionTier, {
   FREE: { 
     name: "Free", 
     price: "₹0/month", 
-    topics: 2, 
+    topics: 3, 
     color: "bg-slate-500",
     gradient: "from-slate-400 to-slate-600",
     icon: <Coffee className="h-5 w-5" />,
-    perks: ["2 topics", "Daily digest", "9 AM delivery"]
+    perks: ["3 topics", "Daily digest", "9 AM delivery"]
   },
   PRO: { 
     name: "Pro", 
     price: "₹3/month", 
-    topics: 4, 
+    topics: 7, 
     color: "bg-amber-500",
     gradient: "from-amber-400 to-orange-500",
     icon: <Flame className="h-5 w-5" />,
-    perks: ["4 topics", "Priority delivery", "No ads", "Deeper insights"]
+    perks: ["7 topics", "Priority delivery", "No ads", "Deeper insights"]
   },
   PREMIUM: { 
     name: "Premium", 
     price: "₹10/month", 
-    topics: 5, 
+    topics: 17, 
     color: "bg-violet-500",
     gradient: "from-violet-500 to-purple-600",
     icon: <Crown className="h-5 w-5" />,
-    perks: ["All 5 topics", "Exclusive tips", "Early access", "Personal digest"]
+    perks: ["All 17 topics", "Exclusive tips", "Early access", "Personal digest"]
   },
 };
 
 const INTERESTS: Interest[] = [
+  // Featured - Free tier
   {
     id: "ai-tools",
     name: "AI Tools & News",
@@ -129,6 +171,8 @@ const INTERESTS: Interest[] = [
     minTier: "FREE",
     color: "violet",
     gradient: "from-violet-500 to-purple-600",
+    keywords: ["ai", "artificial intelligence", "machine learning", "gpt", "tools"],
+    category: "featured",
   },
   {
     id: "stock-market",
@@ -139,6 +183,8 @@ const INTERESTS: Interest[] = [
     minTier: "FREE",
     color: "emerald",
     gradient: "from-emerald-500 to-teal-600",
+    keywords: ["stocks", "nse", "bse", "sensex", "nifty", "trading"],
+    category: "featured",
   },
   {
     id: "crypto",
@@ -146,10 +192,64 @@ const INTERESTS: Interest[] = [
     description: "Cryptocurrency news and blockchain updates",
     icon: <Bitcoin className="h-5 w-5" />,
     field: "crypto",
-    minTier: "PRO",
+    minTier: "FREE",
     color: "amber",
     gradient: "from-amber-500 to-orange-600",
+    keywords: ["crypto", "bitcoin", "ethereum", "defi", "web3", "blockchain"],
+    category: "featured",
   },
+  
+  // Stock Market Related - Pro tier
+  {
+    id: "mutual-funds",
+    name: "Mutual Funds & ETFs",
+    description: "Fund performance, SIP strategies, and NAV updates",
+    icon: <PieChart className="h-5 w-5" />,
+    field: "mutualFunds",
+    minTier: "PRO",
+    color: "blue",
+    gradient: "from-blue-500 to-indigo-600",
+    keywords: ["mutual funds", "sip", "etf", "nav", "portfolio", "amc"],
+    category: "finance",
+  },
+  {
+    id: "ipo-news",
+    name: "IPO & New Listings",
+    description: "Upcoming IPOs, GMP, and listing day updates",
+    icon: <Flame className="h-5 w-5" />,
+    field: "ipoNews",
+    minTier: "PRO",
+    color: "red",
+    gradient: "from-red-500 to-rose-600",
+    keywords: ["ipo", "listing", "allotment", "grey market", "public issue"],
+    category: "finance",
+  },
+  {
+    id: "forex",
+    name: "Forex & Currency",
+    description: "Currency market trends and exchange rates",
+    icon: <Globe className="h-5 w-5" />,
+    field: "forex",
+    minTier: "PRO",
+    color: "teal",
+    gradient: "from-teal-500 to-cyan-600",
+    keywords: ["forex", "currency", "dollar", "rupee", "exchange rate", "usd"],
+    category: "finance",
+  },
+  {
+    id: "commodities",
+    name: "Commodities",
+    description: "Gold, silver, crude oil, and metals market",
+    icon: <Star className="h-5 w-5" />,
+    field: "commodities",
+    minTier: "PRO",
+    color: "yellow",
+    gradient: "from-yellow-500 to-amber-600",
+    keywords: ["gold", "silver", "crude", "oil", "commodities", "mcx"],
+    category: "finance",
+  },
+  
+  // Tech & Business - Pro tier
   {
     id: "startups",
     name: "Startups & Funding",
@@ -159,6 +259,94 @@ const INTERESTS: Interest[] = [
     minTier: "PRO",
     color: "sky",
     gradient: "from-sky-500 to-blue-600",
+    keywords: ["startups", "funding", "venture", "entrepreneur", "vc", "seed"],
+    category: "tech",
+  },
+  {
+    id: "fintech",
+    name: "Fintech",
+    description: "Digital payments, neobanks, and financial tech",
+    icon: <DollarSign className="h-5 w-5" />,
+    field: "fintech",
+    minTier: "PRO",
+    color: "green",
+    gradient: "from-green-500 to-emerald-600",
+    keywords: ["fintech", "payments", "upi", "neobank", "lending", "digital banking"],
+    category: "tech",
+  },
+  {
+    id: "ecommerce",
+    name: "E-commerce",
+    description: "Online retail, D2C brands, and marketplace news",
+    icon: <Building className="h-5 w-5" />,
+    field: "ecommerce",
+    minTier: "PRO",
+    color: "orange",
+    gradient: "from-orange-500 to-red-600",
+    keywords: ["ecommerce", "amazon", "flipkart", "retail", "d2c", "online shopping"],
+    category: "tech",
+  },
+  
+  // Premium tier topics
+  {
+    id: "cloud-computing",
+    name: "Cloud & SaaS",
+    description: "Cloud infrastructure, DevOps, and enterprise tech",
+    icon: <Zap className="h-5 w-5" />,
+    field: "cloudComputing",
+    minTier: "PREMIUM",
+    color: "indigo",
+    gradient: "from-indigo-500 to-purple-600",
+    keywords: ["cloud", "aws", "azure", "saas", "devops", "infrastructure"],
+    category: "tech",
+  },
+  {
+    id: "cybersecurity",
+    name: "Cybersecurity",
+    description: "Security threats, privacy updates, and data protection",
+    icon: <Shield className="h-5 w-5" />,
+    field: "cybersecurity",
+    minTier: "PREMIUM",
+    color: "slate",
+    gradient: "from-slate-500 to-gray-700",
+    keywords: ["cybersecurity", "hacking", "privacy", "security", "data breach"],
+    category: "tech",
+  },
+  {
+    id: "health-wellness",
+    name: "Health & Wellness",
+    description: "Health tips, fitness trends, and wellness insights",
+    icon: <Heart className="h-5 w-5" />,
+    field: "healthWellness",
+    minTier: "PREMIUM",
+    color: "pink",
+    gradient: "from-pink-500 to-rose-600",
+    keywords: ["health", "wellness", "fitness", "nutrition", "mental health"],
+    category: "lifestyle",
+  },
+  {
+    id: "career-growth",
+    name: "Career & Jobs",
+    description: "Job market trends, hiring news, and career tips",
+    icon: <Briefcase className="h-5 w-5" />,
+    field: "careerGrowth",
+    minTier: "PREMIUM",
+    color: "purple",
+    gradient: "from-purple-500 to-violet-600",
+    keywords: ["career", "jobs", "hiring", "layoffs", "salary", "remote work"],
+    category: "lifestyle",
+  },
+  {
+    id: "personal-finance",
+    name: "Personal Finance",
+    description: "Budgeting, tax tips, and money management",
+    icon: <Wallet className="h-5 w-5" />,
+    field: "personalFinance",
+    minTier: "PREMIUM",
+    color: "lime",
+    gradient: "from-lime-500 to-green-600",
+    keywords: ["personal finance", "savings", "tax", "budget", "insurance"],
+    category: "lifestyle",
   },
   {
     id: "productivity",
@@ -169,6 +357,20 @@ const INTERESTS: Interest[] = [
     minTier: "PREMIUM",
     color: "rose",
     gradient: "from-rose-500 to-pink-600",
+    keywords: ["productivity", "efficiency", "workflow", "automation", "habits"],
+    category: "lifestyle",
+  },
+  {
+    id: "world-news",
+    name: "World News",
+    description: "Global events, geopolitics, and international affairs",
+    icon: <Globe className="h-5 w-5" />,
+    field: "worldNews",
+    minTier: "PREMIUM",
+    color: "cyan",
+    gradient: "from-cyan-500 to-blue-600",
+    keywords: ["world news", "global", "international", "politics", "geopolitics"],
+    category: "lifestyle",
   },
 ];
 
@@ -179,6 +381,8 @@ export default function MyNewslettersPage() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [showConfetti, setShowConfetti] = useState(false);
+  const [topicSearch, setTopicSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<"all" | "featured" | "finance" | "tech" | "lifestyle">("all");
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -769,10 +973,73 @@ export default function MyNewslettersPage() {
                       />
                     </div>
                   </div>
+                  
+                  {/* Search and Filters */}
+                  <div className="pt-4 space-y-3">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Search topics... (e.g., stocks, AI, crypto)"
+                        value={topicSearch}
+                        onChange={(e) => setTopicSearch(e.target.value)}
+                        className="pl-10 rounded-full border-stone-200 dark:border-zinc-700"
+                      />
+                      {topicSearch && (
+                        <button
+                          onClick={() => setTopicSearch("")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-sm"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Category Filter */}
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: "all", label: "All Topics", count: INTERESTS.length },
+                        { key: "featured", label: "Featured", count: INTERESTS.filter(i => i.category === "featured").length },
+                        { key: "finance", label: "Finance", count: INTERESTS.filter(i => i.category === "finance").length },
+                        { key: "tech", label: "Tech & Business", count: INTERESTS.filter(i => i.category === "tech").length },
+                        { key: "lifestyle", label: "Lifestyle", count: INTERESTS.filter(i => i.category === "lifestyle").length },
+                      ].map((cat) => (
+                        <Button
+                          key={cat.key}
+                          variant={selectedCategory === cat.key ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedCategory(cat.key as typeof selectedCategory)}
+                          className="rounded-full text-xs"
+                        >
+                          {cat.label}
+                          <Badge variant="secondary" className="ml-1.5 text-xs px-1.5">
+                            {cat.count}
+                          </Badge>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {INTERESTS.map((interest, index) => {
+                    {INTERESTS
+                      .filter(interest => {
+                        // Filter by search
+                        if (topicSearch.trim()) {
+                          const search = topicSearch.toLowerCase();
+                          const matchesSearch = 
+                            interest.name.toLowerCase().includes(search) ||
+                            interest.description.toLowerCase().includes(search) ||
+                            interest.keywords.some(kw => kw.includes(search));
+                          if (!matchesSearch) return false;
+                        }
+                        // Filter by category
+                        if (selectedCategory !== "all" && interest.category !== selectedCategory) {
+                          return false;
+                        }
+                        return true;
+                      })
+                      .map((interest, index) => {
                       const isAvailable = isInterestAvailable(interest);
                       const isSelected = subscriber[interest.field];
 
@@ -781,7 +1048,7 @@ export default function MyNewslettersPage() {
                           key={interest.id}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
+                          transition={{ delay: index * 0.05 }}
                           whileHover={{ scale: isAvailable ? 1.02 : 1 }}
                           whileTap={{ scale: isAvailable ? 0.98 : 1 }}
                         >
@@ -830,9 +1097,14 @@ export default function MyNewslettersPage() {
                                   )}
                                 </div>
                                 <div>
-                                  <h3 className="font-semibold text-stone-900 dark:text-white mb-1">
-                                    {interest.name}
-                                  </h3>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-semibold text-stone-900 dark:text-white">
+                                      {interest.name}
+                                    </h3>
+                                    <Badge variant="outline" className="text-[10px] capitalize">
+                                      {interest.category}
+                                    </Badge>
+                                  </div>
                                   <p className="text-sm text-muted-foreground">
                                     {interest.description}
                                   </p>
@@ -844,6 +1116,36 @@ export default function MyNewslettersPage() {
                       );
                     })}
                   </div>
+                  
+                  {/* No results */}
+                  {INTERESTS.filter(interest => {
+                    if (topicSearch.trim()) {
+                      const search = topicSearch.toLowerCase();
+                      const matchesSearch = 
+                        interest.name.toLowerCase().includes(search) ||
+                        interest.description.toLowerCase().includes(search) ||
+                        interest.keywords.some(kw => kw.includes(search));
+                      if (!matchesSearch) return false;
+                    }
+                    if (selectedCategory !== "all" && interest.category !== selectedCategory) {
+                      return false;
+                    }
+                    return true;
+                  }).length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-lg font-medium">No topics found</p>
+                      <p className="text-sm">Try a different search term or category</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => { setTopicSearch(""); setSelectedCategory("all"); }}
+                        className="mt-4 rounded-full"
+                      >
+                        Clear filters
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
