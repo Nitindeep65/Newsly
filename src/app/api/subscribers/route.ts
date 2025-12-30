@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
+import { Prisma } from "@prisma/client";
 
 // GET all subscribers (admin only)
 export async function GET(request: NextRequest) {
@@ -16,36 +17,40 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const includeTopics = searchParams.get('includeTopics') === 'true';
 
-    // Build select object
-    const selectFields: Record<string, boolean> = {
+    // Base select fields
+    const baseSelect = {
       id: true,
       email: true,
       name: true,
       tier: true,
       verified: true,
       subscribedAt: true,
-    };
+    } as const;
 
-    // Add topic fields if requested
-    if (includeTopics) {
-      selectFields.topicAiTools = true;
-      selectFields.topicStockMarket = true;
-      selectFields.topicCrypto = true;
-      selectFields.topicStartups = true;
-      selectFields.topicProductivity = true;
-      selectFields.topicMutualFunds = true;
-      selectFields.topicIpoNews = true;
-      selectFields.topicForex = true;
-      selectFields.topicCommodities = true;
-      selectFields.topicFintech = true;
-      selectFields.topicEcommerce = true;
-      selectFields.topicCloudComputing = true;
-      selectFields.topicCybersecurity = true;
-      selectFields.topicHealthWellness = true;
-      selectFields.topicCareerGrowth = true;
-      selectFields.topicPersonalFinance = true;
-      selectFields.topicWorldNews = true;
-    }
+    // Topic select fields
+    const topicSelect = {
+      topicAiTools: true,
+      topicStockMarket: true,
+      topicCrypto: true,
+      topicStartups: true,
+      topicProductivity: true,
+      topicMutualFunds: true,
+      topicIpoNews: true,
+      topicForex: true,
+      topicCommodities: true,
+      topicFintech: true,
+      topicEcommerce: true,
+      topicCloudComputing: true,
+      topicCybersecurity: true,
+      topicHealthWellness: true,
+      topicCareerGrowth: true,
+      topicPersonalFinance: true,
+      topicWorldNews: true,
+    } as const;
+
+    const selectFields = includeTopics 
+      ? { ...baseSelect, ...topicSelect } 
+      : baseSelect;
 
     const subscribers = await db.subscriber.findMany({
       orderBy: { subscribedAt: 'desc' },

@@ -6,7 +6,8 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 function createPrismaClient() {
   // Check if we're in edge runtime (Vercel Edge Functions)
-  const isEdgeRuntime = typeof (globalThis as any).EdgeRuntime !== 'undefined';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isEdgeRuntime = typeof (globalThis as Record<string, unknown>).EdgeRuntime !== 'undefined';
 
   if (isEdgeRuntime) {
     // Use Neon adapter for edge runtime
