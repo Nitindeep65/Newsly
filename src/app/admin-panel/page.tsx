@@ -207,7 +207,7 @@ export default function DashboardPage() {
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="relative overflow-hidden rounded-2xl bg-gray-100 p-6 md:p-8 text-black shadow-lg dark:bg-zinc-900/50"
+              className="relative overflow-hidden rounded-2xl bg-black p-6 md:p-8 text-white shadow-lg dark:bg-zinc-900/50"
             >
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
