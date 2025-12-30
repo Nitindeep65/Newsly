@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
-import { Prisma } from "@prisma/client";
 
 // GET all subscribers (admin only)
 export async function GET(request: NextRequest) {
@@ -17,47 +16,63 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const includeTopics = searchParams.get('includeTopics') === 'true';
 
-    // Base select fields
-    const baseSelect = {
-      id: true,
-      email: true,
-      name: true,
-      tier: true,
-      verified: true,
-      subscribedAt: true,
-    } as const;
+    // Always fetch with topics if requested, otherwise just base fields
+    if (includeTopics) {
+      const subscribers = await db.subscriber.findMany({
+        orderBy: { subscribedAt: 'desc' },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          tier: true,
+          verified: true,
+          subscribedAt: true,
+          topicAiTools: true,
+          topicStockMarket: true,
+          topicCrypto: true,
+          topicStartups: true,
+          topicProductivity: true,
+          topicMutualFunds: true,
+          topicIpoNews: true,
+          topicForex: true,
+          topicCommodities: true,
+          topicFintech: true,
+          topicEcommerce: true,
+          topicCloudComputing: true,
+          topicCybersecurity: true,
+          topicHealthWellness: true,
+          topicCareerGrowth: true,
+          topicPersonalFinance: true,
+          topicWorldNews: true,
+        },
+      });
 
-    // Topic select fields
-    const topicSelect = {
-      topicAiTools: true,
-      topicStockMarket: true,
-      topicCrypto: true,
-      topicStartups: true,
-      topicProductivity: true,
-      topicMutualFunds: true,
-      topicIpoNews: true,
-      topicForex: true,
-      topicCommodities: true,
-      topicFintech: true,
-      topicEcommerce: true,
-      topicCloudComputing: true,
-      topicCybersecurity: true,
-      topicHealthWellness: true,
-      topicCareerGrowth: true,
-      topicPersonalFinance: true,
-      topicWorldNews: true,
-    } as const;
+      const proCount = subscribers.filter(s => s.tier === 'PRO').length;
+      const premiumCount = subscribers.filter(s => s.tier === 'PREMIUM').length;
+      const freeCount = subscribers.filter(s => s.tier === 'FREE').length;
 
-    const selectFields = includeTopics 
-      ? { ...baseSelect, ...topicSelect } 
-      : baseSelect;
+      return NextResponse.json({ 
+        subscribers,
+        total: subscribers.length,
+        proCount,
+        premiumCount,
+        freeCount,
+      });
+    }
 
+    // Without topics
     const subscribers = await db.subscriber.findMany({
       orderBy: { subscribedAt: 'desc' },
-      select: selectFields,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        tier: true,
+        verified: true,
+        subscribedAt: true,
+      },
     });
 
-    // Count by tier
     const proCount = subscribers.filter(s => s.tier === 'PRO').length;
     const premiumCount = subscribers.filter(s => s.tier === 'PREMIUM').length;
     const freeCount = subscribers.filter(s => s.tier === 'FREE').length;

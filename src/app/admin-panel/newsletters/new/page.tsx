@@ -109,6 +109,9 @@ export default function CreateNewsletterPage() {
       const toolsData = await toolsRes.json();
       const subsData = await subsRes.json();
       
+      console.log('Subscribers API response:', subsData);
+      console.log('First subscriber topics:', subsData.subscribers?.[0]);
+      
       setTools(toolsData.tools || []);
       setSubscribers(subsData.subscribers || []);
     } catch (error) {
