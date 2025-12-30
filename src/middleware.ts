@@ -1,4 +1,4 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 // Admin email - only this user can access admin panel
@@ -31,8 +31,20 @@ const isPublicRoute = createRouteMatcher([
   "/api/cron(.*)",
 ]);
 
+// Helper to get user email from Clerk
+async function getUserEmail(userId: string): Promise<string | null> {
+  try {
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    return user.emailAddresses?.[0]?.emailAddress || null;
+  } catch (error) {
+    console.error("Error fetching user email:", error);
+    return null;
+  }
+}
+
 export default clerkMiddleware(async (auth, req) => {
-  const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
   
   // Protect routes that require authentication
   if (isProtectedRoute(req)) {
@@ -41,7 +53,7 @@ export default clerkMiddleware(async (auth, req) => {
   
   // Check if user is trying to access admin routes
   if (isAdminRoute(req) && userId) {
-    const userEmail = sessionClaims?.email as string | undefined;
+    const userEmail = await getUserEmail(userId);
     
     // If not admin, redirect to user dashboard
     if (userEmail !== ADMIN_EMAIL) {
@@ -51,7 +63,7 @@ export default clerkMiddleware(async (auth, req) => {
   
   // If admin user lands on /my-newsletters, redirect to admin panel
   if (req.nextUrl.pathname === "/my-newsletters" && userId) {
-    const userEmail = sessionClaims?.email as string | undefined;
+    const userEmail = await getUserEmail(userId);
     
     if (userEmail === ADMIN_EMAIL) {
       return NextResponse.redirect(new URL("/admin-panel", req.url));
