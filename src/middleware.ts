@@ -18,7 +18,6 @@ const isAdminRoute = createRouteMatcher([
 ]);
 
 // Define public routes that should bypass auth
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
@@ -29,6 +28,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/tools(.*)",
   "/api/phonepe/webhook(.*)",
   "/api/cron(.*)",
+  "/api/newsletter/auto(.*)",  // Allow cron job access
 ]);
 
 // Helper to get user email from Clerk
@@ -45,6 +45,11 @@ async function getUserEmail(userId: string): Promise<string | null> {
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
+  
+  // Skip protection for public routes (like cron endpoints)
+  if (isPublicRoute(req)) {
+    return;
+  }
   
   // Protect routes that require authentication
   if (isProtectedRoute(req)) {
