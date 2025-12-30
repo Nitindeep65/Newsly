@@ -31,6 +31,19 @@ export async function GET(request: NextRequest) {
           topicCrypto: true,
           topicStartups: true,
           topicProductivity: true,
+          // New topic fields
+          topicMutualFunds: true,
+          topicIpoNews: true,
+          topicForex: true,
+          topicCommodities: true,
+          topicFintech: true,
+          topicEcommerce: true,
+          topicCloudComputing: true,
+          topicCybersecurity: true,
+          topicHealthWellness: true,
+          topicCareerGrowth: true,
+          topicPersonalFinance: true,
+          topicWorldNews: true,
         }),
       }
     });

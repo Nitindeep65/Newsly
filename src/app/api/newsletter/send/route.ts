@@ -28,6 +28,19 @@ export async function POST(request: NextRequest) {
       topicCrypto: boolean;
       topicStartups: boolean;
       topicProductivity: boolean;
+      // New topic fields
+      topicMutualFunds: boolean;
+      topicIpoNews: boolean;
+      topicForex: boolean;
+      topicCommodities: boolean;
+      topicFintech: boolean;
+      topicEcommerce: boolean;
+      topicCloudComputing: boolean;
+      topicCybersecurity: boolean;
+      topicHealthWellness: boolean;
+      topicCareerGrowth: boolean;
+      topicPersonalFinance: boolean;
+      topicWorldNews: boolean;
     }
 
     let subscribers: SubscriberData[] = [];
@@ -46,6 +59,18 @@ export async function POST(request: NextRequest) {
           topicCrypto: true,
           topicStartups: true,
           topicProductivity: true,
+          topicMutualFunds: true,
+          topicIpoNews: true,
+          topicForex: true,
+          topicCommodities: true,
+          topicFintech: true,
+          topicEcommerce: true,
+          topicCloudComputing: true,
+          topicCybersecurity: true,
+          topicHealthWellness: true,
+          topicCareerGrowth: true,
+          topicPersonalFinance: true,
+          topicWorldNews: true,
         }
       });
     } else {
@@ -61,6 +86,18 @@ export async function POST(request: NextRequest) {
           topicCrypto: true,
           topicStartups: true,
           topicProductivity: true,
+          topicMutualFunds: true,
+          topicIpoNews: true,
+          topicForex: true,
+          topicCommodities: true,
+          topicFintech: true,
+          topicEcommerce: true,
+          topicCloudComputing: true,
+          topicCybersecurity: true,
+          topicHealthWellness: true,
+          topicCareerGrowth: true,
+          topicPersonalFinance: true,
+          topicWorldNews: true,
         }
       });
     }

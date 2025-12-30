@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Send, Users, Filter, Sparkles, TrendingUp, BarChart3, Zap, Target, Check } from "lucide-react";
+import { ArrowLeft, Loader2, Send, Users, Filter, Sparkles, TrendingUp, BarChart3, Zap, Target, Check, PieChart, Flame, Globe, Star, DollarSign, Building, Shield, Heart, Briefcase, Wallet } from "lucide-react";
 import Link from "next/link";
 
 interface Tool {
@@ -36,14 +36,43 @@ interface Subscriber {
   topicCrypto: boolean;
   topicStartups: boolean;
   topicProductivity: boolean;
+  // New topic fields
+  topicMutualFunds: boolean;
+  topicIpoNews: boolean;
+  topicForex: boolean;
+  topicCommodities: boolean;
+  topicFintech: boolean;
+  topicEcommerce: boolean;
+  topicCloudComputing: boolean;
+  topicCybersecurity: boolean;
+  topicHealthWellness: boolean;
+  topicCareerGrowth: boolean;
+  topicPersonalFinance: boolean;
+  topicWorldNews: boolean;
 }
 
 const TOPICS = [
-  { key: 'topicAiTools', name: 'AI & Tech', icon: Sparkles, color: 'violet' },
-  { key: 'topicStockMarket', name: 'Stocks', icon: TrendingUp, color: 'emerald' },
-  { key: 'topicCrypto', name: 'Crypto', icon: BarChart3, color: 'amber' },
-  { key: 'topicStartups', name: 'Startups', icon: Zap, color: 'sky' },
-  { key: 'topicProductivity', name: 'Productivity', icon: Target, color: 'rose' },
+  // Featured
+  { key: 'topicAiTools', name: 'AI & Tech', icon: Sparkles, color: 'violet', category: 'Featured' },
+  { key: 'topicStockMarket', name: 'Stocks', icon: TrendingUp, color: 'emerald', category: 'Featured' },
+  { key: 'topicCrypto', name: 'Crypto', icon: BarChart3, color: 'amber', category: 'Featured' },
+  // Finance
+  { key: 'topicMutualFunds', name: 'Mutual Funds', icon: PieChart, color: 'blue', category: 'Finance' },
+  { key: 'topicIpoNews', name: 'IPO News', icon: Flame, color: 'red', category: 'Finance' },
+  { key: 'topicForex', name: 'Forex', icon: Globe, color: 'teal', category: 'Finance' },
+  { key: 'topicCommodities', name: 'Commodities', icon: Star, color: 'yellow', category: 'Finance' },
+  // Tech & Business
+  { key: 'topicStartups', name: 'Startups', icon: Zap, color: 'sky', category: 'Tech' },
+  { key: 'topicFintech', name: 'Fintech', icon: DollarSign, color: 'green', category: 'Tech' },
+  { key: 'topicEcommerce', name: 'E-commerce', icon: Building, color: 'orange', category: 'Tech' },
+  { key: 'topicCloudComputing', name: 'Cloud & SaaS', icon: Zap, color: 'indigo', category: 'Tech' },
+  { key: 'topicCybersecurity', name: 'Cybersecurity', icon: Shield, color: 'slate', category: 'Tech' },
+  // Lifestyle
+  { key: 'topicHealthWellness', name: 'Health', icon: Heart, color: 'pink', category: 'Lifestyle' },
+  { key: 'topicCareerGrowth', name: 'Career', icon: Briefcase, color: 'purple', category: 'Lifestyle' },
+  { key: 'topicPersonalFinance', name: 'Personal Finance', icon: Wallet, color: 'lime', category: 'Lifestyle' },
+  { key: 'topicProductivity', name: 'Productivity', icon: Target, color: 'rose', category: 'Lifestyle' },
+  { key: 'topicWorldNews', name: 'World News', icon: Globe, color: 'cyan', category: 'Lifestyle' },
 ];
 
 export default function CreateNewsletterPage() {
@@ -368,36 +397,43 @@ export default function CreateNewsletterPage() {
 
                     <div className="text-xs text-muted-foreground text-center">— or filter by interest —</div>
 
-                    {/* Topic Filters */}
-                    <div className="space-y-2">
-                      {TOPICS.map((topic) => {
-                        const count = subscribersByTopic[topic.key]?.length || 0;
-                        const isSelected = selectedTopics.includes(topic.key);
-                        return (
-                          <label
-                            key={topic.key}
-                            className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                              isSelected ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => toggleTopic(topic.key)}
-                              className="h-4 w-4"
-                            />
-                            <topic.icon className={`h-4 w-4 text-${topic.color}-500`} />
-                            <div className="flex-1">
-                              <div className="font-medium text-sm">{topic.name}</div>
-                            </div>
-                            <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                              isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                            }`}>
-                              {count}
-                            </div>
-                          </label>
-                        );
-                      })}
+                    {/* Topic Filters - grouped by category */}
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                      {['Featured', 'Finance', 'Tech', 'Lifestyle'].map((category) => (
+                        <div key={category}>
+                          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{category}</div>
+                          <div className="space-y-1">
+                            {TOPICS.filter(t => t.category === category).map((topic) => {
+                              const count = subscribersByTopic[topic.key]?.length || 0;
+                              const isSelected = selectedTopics.includes(topic.key);
+                              return (
+                                <label
+                                  key={topic.key}
+                                  className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
+                                    isSelected ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => toggleTopic(topic.key)}
+                                    className="h-3.5 w-3.5"
+                                  />
+                                  <topic.icon className={`h-3.5 w-3.5 text-${topic.color}-500`} />
+                                  <div className="flex-1">
+                                    <div className="font-medium text-xs">{topic.name}</div>
+                                  </div>
+                                  <div className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                                    isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                                  }`}>
+                                    {count}
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     {/* Selected Summary */}
