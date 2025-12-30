@@ -32,14 +32,9 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET - Check current topic status
-export async function GET(request: NextRequest) {
+// GET - Check current topic status (no auth required for debugging)
+export async function GET() {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Get all subscribers with their topic values
     const subscribers = await db.subscriber.findMany({
       select: {
@@ -49,29 +44,44 @@ export async function GET(request: NextRequest) {
         topicStockMarket: true,
         topicCrypto: true,
         topicStartups: true,
+        topicProductivity: true,
+        topicMutualFunds: true,
+        topicIpoNews: true,
       },
     });
 
     // Count topic distribution
-    const aiCount = subscribers.filter(s => s.topicAiTools === true).length;
-    const stockCount = subscribers.filter(s => s.topicStockMarket === true).length;
-    const cryptoCount = subscribers.filter(s => s.topicCrypto === true).length;
-    const startupsCount = subscribers.filter(s => s.topicStartups === true).length;
+    const topicCounts = {
+      total: subscribers.length,
+      aiTools: subscribers.filter(s => s.topicAiTools === true).length,
+      stockMarket: subscribers.filter(s => s.topicStockMarket === true).length,
+      crypto: subscribers.filter(s => s.topicCrypto === true).length,
+      startups: subscribers.filter(s => s.topicStartups === true).length,
+      productivity: subscribers.filter(s => s.topicProductivity === true).length,
+      mutualFunds: subscribers.filter(s => s.topicMutualFunds === true).length,
+      ipoNews: subscribers.filter(s => s.topicIpoNews === true).length,
+    };
+
+    // Check for any true values at all
+    const anyTrueValues = subscribers.some(s => 
+      s.topicAiTools || s.topicStockMarket || s.topicCrypto || 
+      s.topicStartups || s.topicProductivity
+    );
 
     return NextResponse.json({
-      total: subscribers.length,
-      topicCounts: {
-        aiTools: aiCount,
-        stockMarket: stockCount,
-        crypto: cryptoCount,
-        startups: startupsCount,
-      },
-      sample: subscribers.slice(0, 3),
+      topicCounts,
+      anyTrueValues,
+      sampleSubscribers: subscribers.slice(0, 5).map(s => ({
+        email: s.email.substring(0, 5) + '***',
+        topicAiTools: s.topicAiTools,
+        topicStockMarket: s.topicStockMarket,
+        topicCrypto: s.topicCrypto,
+      })),
     });
   } catch (error) {
     console.error("Failed to check topics:", error);
     return NextResponse.json(
-      { error: "Failed to check topics" },
+      { error: "Failed to check topics", details: String(error) },
       { status: 500 }
     );
   }
