@@ -35,15 +35,60 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // Count by tier
+    const proCount = subscribers.filter(s => s.tier === 'PRO').length;
+    const premiumCount = subscribers.filter(s => s.tier === 'PREMIUM').length;
+    const freeCount = subscribers.filter(s => s.tier === 'FREE').length;
+
     return NextResponse.json({ 
       subscribers,
       total: subscribers.length,
-      proCount: subscribers.filter(s => s.tier === 'PRO').length,
+      proCount,
+      premiumCount,
+      freeCount,
     });
   } catch (error) {
     console.error("Failed to fetch subscribers:", error);
     return NextResponse.json(
       { error: "Failed to fetch subscribers" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE subscriber (admin only)
+export async function DELETE(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const subscriberId = searchParams.get('id');
+
+    if (!subscriberId) {
+      return NextResponse.json(
+        { error: "Subscriber ID is required" },
+        { status: 400 }
+      );
+    }
+
+    await db.subscriber.delete({
+      where: { id: subscriberId }
+    });
+
+    return NextResponse.json({ 
+      success: true,
+      message: "Subscriber deleted successfully" 
+    });
+  } catch (error) {
+    console.error("Failed to delete subscriber:", error);
+    return NextResponse.json(
+      { error: "Failed to delete subscriber" },
       { status: 500 }
     );
   }
