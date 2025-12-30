@@ -1,10 +1,8 @@
 import {
   LayoutGrid,
   LucideIcon,
-  Wrench,
   Mail,
   Users,
-  PlusCircle,
   Send,
 } from "lucide-react";
 
@@ -60,23 +58,6 @@ export function getMenuList(pathname: string): Group[] {
           label: "All Newsletters",
           icon: Mail,
           active: pathname === "/admin-panel/newsletters"
-        },
-      ]
-    },
-    {
-      groupLabel: "Tools",
-      menus: [
-        {
-          href: "/admin-panel/tools",
-          label: "All Tools",
-          icon: Wrench,
-          active: pathname === "/admin-panel/tools"
-        },
-        {
-          href: "/admin-panel/tools/new",
-          label: "Add Tool",
-          icon: PlusCircle,
-          active: pathname === "/admin-panel/tools/new"
         },
       ]
     },
