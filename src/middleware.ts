@@ -1,4 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+
+// Admin email - only this user can access admin panel
+const ADMIN_EMAIL = "nitindeep65@gmail.com";
 
 // Define protected routes that require authentication
 const isProtectedRoute = createRouteMatcher([
@@ -6,6 +10,11 @@ const isProtectedRoute = createRouteMatcher([
   "/admin-panel(.*)",
   "/api/subscribers(.*)",
   "/api/newsletter(.*)",
+]);
+
+// Define admin-only routes
+const isAdminRoute = createRouteMatcher([
+  "/admin-panel(.*)",
 ]);
 
 // Define public routes that should bypass auth
@@ -23,9 +32,30 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
+  const { userId, sessionClaims } = await auth();
+  
   // Protect routes that require authentication
   if (isProtectedRoute(req)) {
     await auth.protect();
+  }
+  
+  // Check if user is trying to access admin routes
+  if (isAdminRoute(req) && userId) {
+    const userEmail = sessionClaims?.email as string | undefined;
+    
+    // If not admin, redirect to user dashboard
+    if (userEmail !== ADMIN_EMAIL) {
+      return NextResponse.redirect(new URL("/my-newsletters", req.url));
+    }
+  }
+  
+  // If admin user lands on /my-newsletters, redirect to admin panel
+  if (req.nextUrl.pathname === "/my-newsletters" && userId) {
+    const userEmail = sessionClaims?.email as string | undefined;
+    
+    if (userEmail === ADMIN_EMAIL) {
+      return NextResponse.redirect(new URL("/admin-panel", req.url));
+    }
   }
 });
 

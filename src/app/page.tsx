@@ -223,47 +223,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="py-16 px-5 bg-white dark:bg-zinc-900/50">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-white mb-2">Dead simple</h2>
-            <p className="text-stone-600 dark:text-zinc-400">Three steps to smarter mornings</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { num: "1", title: "Subscribe", desc: "Drop your email, pick topics", icon: Mail, color: "bg-emerald-500" },
-              { num: "2", title: "We curate", desc: "AI finds the best stories", icon: Sparkles, color: "bg-violet-500" },
-              { num: "3", title: "You read", desc: "Digest arrives at 9 AM", icon: Newspaper, color: "bg-amber-500" },
-            ].map((step, i) => (
-              <motion.div
-                key={step.num}
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: i * 0.1 }}
-                className="relative"
-              >
-                <div className="flex flex-col items-center text-center p-6">
-                  <div className={`w-12 h-12 ${step.color} rounded-2xl flex items-center justify-center mb-4 shadow-lg`}>
-                    <step.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-xs font-medium text-stone-400 dark:text-zinc-600 mb-1">Step {step.num}</div>
-                  <h3 className="font-semibold text-lg text-stone-900 dark:text-white mb-1">{step.title}</h3>
-                  <p className="text-sm text-stone-600 dark:text-zinc-400">{step.desc}</p>
-                </div>
-                {i < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-3 w-6 text-stone-300 dark:text-zinc-700">
-                    <ChevronRight className="w-6 h-6" />
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Pricing */}
       <section id="pricing" className="py-16 px-5">
         <div className="max-w-4xl mx-auto">
@@ -369,59 +328,9 @@ export default function LandingPage() {
           <blockquote className="text-lg sm:text-xl text-stone-700 dark:text-zinc-300 mb-4 italic">
             &quot;Finally, a newsletter that doesn&apos;t feel like homework. Quick, relevant, and actually useful.&quot;
           </blockquote>
-          <p className="text-sm text-stone-500 dark:text-zinc-500">— Happy reader from Bangalore</p>
+          <p className="text-sm text-stone-500 dark:text-zinc-500">— Happy reader from India</p>
         </div>
       </section>
-
-      {/* Final CTA */}
-      <section className="py-20 px-5">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="max-w-2xl mx-auto"
-        >
-          <Card className="bg-gradient-to-br from-stone-900 to-stone-800 dark:from-zinc-800 dark:to-zinc-900 border-0 overflow-hidden">
-            <CardContent className="p-8 sm:p-12 text-center text-white relative">
-              <div className="absolute top-4 right-4 w-20 h-20 bg-amber-500/20 rounded-full blur-2xl" />
-              <div className="absolute bottom-4 left-4 w-16 h-16 bg-rose-500/20 rounded-full blur-2xl" />
-              
-              <h2 className="text-2xl sm:text-3xl font-bold mb-3 relative">Start your smarter mornings</h2>
-              <p className="text-stone-400 mb-6 relative">Join readers who skip the noise and get straight to what matters.</p>
-              
-              <form onSubmit={(e) => handleSubscribe(e, 'FREE')} className="flex gap-2 max-w-sm mx-auto relative" id="subscribe">
-                <Input
-                  type="email"
-                  placeholder="Your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 rounded-full"
-                />
-                <Button type="submit" disabled={loading} className="rounded-full bg-amber-500 hover:bg-amber-400 text-white px-5 shrink-0">
-                  {loading ? '...' : 'Join'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-8 px-5 border-t border-stone-200 dark:border-zinc-800">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-md flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-white" />
-            </div>
-            <span className="font-medium">Newsly</span>
-          </div>
-          <p className="text-sm text-stone-500 dark:text-zinc-500">© 2025 Newsly. Made with ☕ in India.</p>
-          <div className="flex gap-4 text-sm text-stone-500 dark:text-zinc-500">
-            <Link href="/sign-in" className="hover:text-stone-900 dark:hover:text-white transition-colors">Sign in</Link>
-            <Link href="/my-newsletters" className="hover:text-stone-900 dark:hover:text-white transition-colors">Dashboard</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

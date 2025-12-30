@@ -30,8 +30,8 @@ export default function RootLayout({
       appearance={{
         baseTheme: undefined
       }}
-      afterSignInUrl="/admin-panel"
-      afterSignUpUrl="/admin-panel"
+      afterSignInUrl="/my-newsletters"
+      afterSignUpUrl="/my-newsletters"
     >
       <html lang="en" suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
