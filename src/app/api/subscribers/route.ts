@@ -6,7 +6,10 @@ import { auth } from "@clerk/nextjs/server";
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
+    console.log("Subscribers API - userId:", userId);
+    
     if (!userId) {
+      console.log("Subscribers API - Unauthorized, returning 401");
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -15,6 +18,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const includeTopics = searchParams.get('includeTopics') === 'true';
+    console.log("Subscribers API - includeTopics:", includeTopics);
 
     // Always fetch with topics if requested, otherwise just base fields
     if (includeTopics) {
@@ -46,6 +50,9 @@ export async function GET(request: NextRequest) {
           topicWorldNews: true,
         },
       });
+
+      console.log("Subscribers API - Found", subscribers.length, "subscribers with topics");
+      console.log("Subscribers API - First subscriber:", subscribers[0]);
 
       const proCount = subscribers.filter(s => s.tier === 'PRO').length;
       const premiumCount = subscribers.filter(s => s.tier === 'PREMIUM').length;
