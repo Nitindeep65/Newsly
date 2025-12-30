@@ -171,7 +171,7 @@ function generateHtmlFromContent(
   <!-- Header -->
   <div style="text-align: center; margin-bottom: 32px;">
     <h1 style="font-size: 28px; margin: 0;">
-      ${topicEmoji[topic]} AI Tools Weekly
+      ${topicEmoji[topic]} Newsly
     </h1>
     <p style="color: #6b7280; margin: 8px 0;">${new Date().toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
     ${tierBadge}

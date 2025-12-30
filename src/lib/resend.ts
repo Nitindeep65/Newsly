@@ -10,7 +10,7 @@ export async function sendEmail({
   to,
   subject,
   html,
-  from = 'AI Tools Weekly <newsletter@aitoolsweekly.com>',
+  from = 'Newsly <newsletter@newsly.com>',
 }: {
   to: string | string[];
   subject: string;

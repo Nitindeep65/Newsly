@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
           <!-- Footer -->
           <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #e5e5e5; text-align: center;">
             <p style="margin: 0; font-size: 14px; color: #666;">
-              AI Tools Weekly • Curated tools for Indian traders & developers
+              Newsly • Curated tools for Indian traders & developers
             </p>
             <p style="margin: 12px 0 0 0; font-size: 12px; color: #999;">
               <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://yoursite.com'}/unsubscribe" style="color: #999;">Unsubscribe</a>
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
     for (const subscriber of subscribers) {
       try {
         await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'AI Tools Weekly <newsletter@resend.dev>',
+          from: process.env.RESEND_FROM_EMAIL || 'Newsly <newsletter@resend.dev>',
           to: subscriber.email,
           subject: subject || title,
           html: emailHtml.replace('{{name}}', subscriber.name || 'there'),

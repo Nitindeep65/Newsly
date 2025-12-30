@@ -91,7 +91,7 @@ async function generateAndSend(
       const emailPromises = batch.map(async (subscriber) => {
         try {
           await resend.emails.send({
-            from: "AI Tools Weekly <newsletter@aitoolsweekly.in>",
+            from: "Newsly <newsletter@newsly.in>",
             to: subscriber.email,
             subject: content.subject,
             html: content.contentHtml,

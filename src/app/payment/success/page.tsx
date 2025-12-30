@@ -7,7 +7,8 @@ import { Suspense } from 'react';
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const txn = searchParams.get('txn');
+  const orderId = searchParams.get('orderId') || searchParams.get('txn');
+  const plan = searchParams.get('plan') || 'PRO';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800 p-4">
@@ -21,14 +22,18 @@ function SuccessContent() {
         </h1>
         
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          Welcome to AI Tools Weekly! Your subscription is now active.
+          Welcome to Newsly {plan}! Your subscription is now active.
         </p>
 
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Transaction ID</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Order ID</p>
           <p className="font-mono text-sm text-gray-700 dark:text-gray-300 break-all">
-            {txn || 'N/A'}
+            {orderId || 'N/A'}
           </p>
+          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Plan</p>
+            <p className="font-semibold text-lg text-indigo-600 dark:text-indigo-400">{plan}</p>
+          </div>
         </div>
 
         <div className="space-y-3">

@@ -20,7 +20,7 @@ interface WelcomeEmailProps {
 }
 
 export const WelcomeEmail = ({ name, email, verifyUrl }: WelcomeEmailProps) => {
-  const previewText = 'Welcome to AI Tools Weekly - Your weekly dose of AI tools for traders & developers';
+  const previewText = 'Welcome to Newsly - Your weekly dose of AI tools for traders & developers';
 
   return (
     <Html>
@@ -28,14 +28,14 @@ export const WelcomeEmail = ({ name, email, verifyUrl }: WelcomeEmailProps) => {
       <Preview>{previewText}</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>Welcome to AI Tools Weekly! 🚀</Heading>
+          <Heading style={h1}>Welcome to Newsly! 🚀</Heading>
           
           <Text style={text}>
             Hey {name || 'there'}!
           </Text>
 
           <Text style={text}>
-            Thanks for subscribing to <strong>AI Tools Weekly</strong> - the #1 newsletter for 
+            Thanks for subscribing to <strong>Newsly</strong> - the #1 newsletter for 
             discovering AI tools tailored for Indian traders and developers.
           </Text>
 
@@ -87,7 +87,7 @@ export const WelcomeEmail = ({ name, email, verifyUrl }: WelcomeEmailProps) => {
           </Text>
 
           <Text style={footer}>
-            AI Tools Weekly • Made with ❤️ for Indian traders & developers
+            Newsly • Made with ❤️ for Indian traders & developers
           </Text>
         </Container>
       </Body>

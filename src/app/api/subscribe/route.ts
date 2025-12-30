@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       data: {
         subscriberId: subscriber.id,
         emailType: 'welcome',
-        subject: 'Welcome to AI Tools Weekly! 🚀',
+        subject: 'Welcome to Newsly! 🚀',
         status: 'SENT',
       },
     });

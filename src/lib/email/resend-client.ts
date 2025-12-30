@@ -18,7 +18,7 @@ export async function sendEmail({
 }) {
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'AI Tools Weekly <newsletter@aitools.dev>',
+      from: process.env.EMAIL_FROM || 'Newsly <newsletter@newsly.dev>',
       to,
       subject,
       react,

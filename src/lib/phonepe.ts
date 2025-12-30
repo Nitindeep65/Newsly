@@ -14,13 +14,13 @@ const PHONEPE_CONFIG = {
 
 // Plan pricing in paise (1 rupee = 100 paise)
 export const PLAN_PRICES = {
-  BASIC: 100,     // ₹1 = 100 paise
+  FREE: 0,        // Free plan
   PRO: 300,       // ₹3 = 300 paise
   PREMIUM: 1000,  // ₹10 = 1000 paise
 };
 
 export const PLAN_NAMES = {
-  BASIC: 'Basic Newsletter',
+  FREE: 'Free Newsletter',
   PRO: 'Pro Newsletter',
   PREMIUM: 'Premium Newsletter',
 };

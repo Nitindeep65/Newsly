@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
   } catch {
     return {
-      title: "AI Tool | AI Tools Weekly",
+      title: "AI Tool | Newsly",
       description: "Discover AI tools",
     };
   }

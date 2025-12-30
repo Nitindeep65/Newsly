@@ -7,10 +7,25 @@ import {
   PLAN_NAMES 
 } from "@/lib/phonepe";
 
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const plan = searchParams.get('plan') || 'PRO';
+  const email = searchParams.get('email');
+
+  if (!email) {
+    return NextResponse.json(
+      { error: "Email is required" },
+      { status: 400 }
+    );
+  }
+
+  return handleCheckout(email, plan);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, plan = 'basic' } = body;
+    const { email, plan = 'PRO' } = body;
 
     if (!email) {
       return NextResponse.json(
@@ -19,10 +34,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get plan details
-    const planKey = plan.toUpperCase() as keyof typeof PLAN_PRICES;
-    const amount = PLAN_PRICES[planKey] || PLAN_PRICES.BASIC;
-    const planName = PLAN_NAMES[planKey] || PLAN_NAMES.BASIC;
+    return handleCheckout(email, plan);
+  } catch (error) {
+    console.error('Checkout error:', error);
+    return NextResponse.json(
+      { error: "Failed to process checkout" },
+      { status: 500 }
+    );
+  }
+}
+
+async function handleCheckout(email: string, plan: string) {
+  try {
+    // Normalize plan name to match Prisma schema (FREE, PRO, PREMIUM)
+    let normalizedPlan = plan.toUpperCase();
+    if (normalizedPlan === 'BASIC') normalizedPlan = 'PRO';
+    const planKey = normalizedPlan as keyof typeof PLAN_PRICES;
+    const amount = PLAN_PRICES[planKey] || PLAN_PRICES.PRO;
 
     // Find or create subscriber
     let subscriber = await db.subscriber.findUnique({
@@ -40,7 +68,21 @@ export async function POST(request: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-    // Initiate PhonePe payment using official SDK
+    // MOCK MODE: Redirect to mock payment page for testing
+    const useMockPayment = process.env.USE_MOCK_PAYMENT !== 'false';
+    
+    if (useMockPayment) {
+      // Redirect to mock payment page (no order record needed, will update subscriber directly)
+      const mockPaymentUrl = `${appUrl}/payment/mock?email=${encodeURIComponent(email)}&plan=${planKey}&orderId=${transactionId}&amount=${amount}`;
+      
+      return NextResponse.json({
+        success: true,
+        redirectUrl: mockPaymentUrl,
+        orderId: transactionId,
+      });
+    }
+
+    // PRODUCTION: Use real PhonePe payment
     const paymentResponse = await initiatePayment({
       merchantOrderId: transactionId,
       amount: amount,

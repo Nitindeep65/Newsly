@@ -88,7 +88,7 @@ export default function LandingPage() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold">AI Tools Weekly</span>
+              <span className="text-xl font-bold">Newsly</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/tools" className="text-sm hover:text-primary transition-colors">
@@ -184,32 +184,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Featured Tools */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Top 10 AI Tools This Week</h2>
-            <p className="text-lg text-muted-foreground">
-              Handpicked tools from our directory — with Indian pricing (₹)
-            </p>
-          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-            {featuredTools.map((tool: any) => (
-              <ToolCard key={tool.id} tool={tool} />
-            ))}
-          </div>
-
-          <div className="text-center">
-            <Link href="/tools">
-              <Button size="lg" variant="outline">
-                Browse All Tools
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* What You Get */}
       <section className="py-20 px-4">
@@ -499,7 +474,7 @@ export default function LandingPage() {
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <span className="font-bold">AI Tools Weekly</span>
+                <span className="font-bold">Newsly</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Curated AI tools for Indian traders and developers.
@@ -534,7 +509,7 @@ export default function LandingPage() {
           </div>
           
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2025 AI Tools Weekly. Made with ❤️ for Indian traders & developers.</p>
+            <p>© 2025 Newsly. Made with ❤️ for Indian traders & developers.</p>
           </div>
         </div>
       </footer>

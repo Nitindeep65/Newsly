@@ -9,7 +9,7 @@ import Link from "next/link";
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: "Sample Newsletter | AI Tools Weekly",
+  title: "Sample Newsletter | Newsly",
   description: "See what you'll get in your inbox every week - curated AI tools for traders & developers",
 };
 
@@ -41,7 +41,7 @@ export default async function SampleNewsletterPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">AI Tools Weekly</span>
+            <span className="font-bold text-xl">Newsly</span>
           </Link>
           <Button asChild>
             <Link href="/#subscribe">Subscribe Free</Link>
@@ -66,7 +66,7 @@ export default async function SampleNewsletterPage() {
           <CardHeader className="bg-muted/50 border-b">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
               <Mail className="h-4 w-4" />
-              <span>From: AI Tools Weekly &lt;newsletter@aitools.dev&gt;</span>
+              <span>From: Newsly &lt;newsletter@newsly.dev&gt;</span>
             </div>
             <CardTitle className="text-xl">
               🚀 5 AI Tools That Will 10x Your Productivity This Week
@@ -170,7 +170,7 @@ async function analyzeTrend(data) {
 
             {/* Footer */}
             <div className="pt-4 border-t text-center text-sm text-muted-foreground">
-              <p>AI Tools Weekly • Curated for Indian traders & developers</p>
+              <p>Newsly • Curated for Indian traders & developers</p>
               <p className="mt-1">
                 <a href="#" className="underline">Unsubscribe</a> • 
                 <a href="#" className="underline ml-2">View in browser</a>
