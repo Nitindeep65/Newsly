@@ -38,10 +38,10 @@ function SuccessContent() {
 
         <div className="space-y-3">
           <Link 
-            href="/dashboard"
+            href="/"
             className="block w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-all"
           >
-            Go to Dashboard
+            Go to Home
           </Link>
           
           <Link 

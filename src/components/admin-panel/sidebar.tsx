@@ -35,7 +35,7 @@ export function Sidebar() {
           variant="link"
           asChild
         >
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/admin-panel" className="flex items-center gap-2">
             <Image
               src="/news-app.png"
               alt="Newsly Logo"

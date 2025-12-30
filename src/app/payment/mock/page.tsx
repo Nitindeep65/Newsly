@@ -135,7 +135,7 @@ function MockPaymentContent() {
               </Button>
 
               <Button 
-                onClick={() => router.push('/dashboard')} 
+                onClick={() => router.push('/')} 
                 variant="outline"
                 className="w-full"
               >
