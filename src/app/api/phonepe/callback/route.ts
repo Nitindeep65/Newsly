@@ -13,12 +13,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(new URL('/payment/failed?error=missing_transaction', request.url));
     }
 
-    // Check payment status with PhonePe
+    // Check payment status with PhonePe SDK
     const statusResponse = await checkPaymentStatus(transactionId);
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-    if (statusResponse.success && statusResponse.code === 'PAYMENT_SUCCESS') {
+    if (statusResponse.success && statusResponse.state === 'COMPLETED') {
       // Payment successful - find the transaction and upgrade user
       const paymentLog = await db.emailLog.findFirst({
         where: {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(new URL(`/payment/success?txn=${transactionId}`, appUrl));
     } else {
       // Payment failed
-      return NextResponse.redirect(new URL(`/payment/failed?txn=${transactionId}&error=${statusResponse.code}`, appUrl));
+      return NextResponse.redirect(new URL(`/payment/failed?txn=${transactionId}&error=${statusResponse.state}`, appUrl));
     }
   } catch (error) {
     console.error("PhonePe callback error:", error);

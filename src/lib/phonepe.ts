@@ -1,6 +1,7 @@
 import crypto from 'crypto';
+import { randomUUID } from 'crypto';
 
-// PhonePe Business Configuration
+// PhonePe Business Configuration  
 const PHONEPE_CONFIG = {
   merchantId: process.env.PHONEPE_MERCHANT_ID || '',
   saltKey: process.env.PHONEPE_SALT_KEY || '',
@@ -24,13 +25,10 @@ export const PLAN_NAMES = {
   PREMIUM: 'Premium Newsletter',
 };
 
-interface PaymentRequest {
-  merchantTransactionId: string;
+export interface PaymentRequest {
+  merchantOrderId: string;
   amount: number; // in paise
-  merchantUserId: string;
   redirectUrl: string;
-  callbackUrl: string;
-  mobileNumber?: string;
 }
 
 export function generateChecksum(payload: string): string {
@@ -53,13 +51,11 @@ export async function initiatePayment(request: PaymentRequest) {
 
   const payload = {
     merchantId,
-    merchantTransactionId: request.merchantTransactionId,
-    merchantUserId: request.merchantUserId,
+    merchantTransactionId: request.merchantOrderId,
+    merchantUserId: 'USER_' + Date.now(),
     amount: request.amount,
     redirectUrl: request.redirectUrl,
     redirectMode: 'POST',
-    callbackUrl: request.callbackUrl,
-    mobileNumber: request.mobileNumber,
     paymentInstrument: {
       type: 'PAY_PAGE',
     },
@@ -68,44 +64,73 @@ export async function initiatePayment(request: PaymentRequest) {
   const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64');
   const checksum = generateChecksum(payloadBase64);
 
-  const response = await fetch(`${baseUrl}/pg/v1/pay`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-VERIFY': checksum,
-    },
-    body: JSON.stringify({
-      request: payloadBase64,
-    }),
-  });
+  try {
+    const response = await fetch(`${baseUrl}/pg/v1/pay`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-VERIFY': checksum,
+      },
+      body: JSON.stringify({
+        request: payloadBase64,
+      }),
+    });
 
-  const data = await response.json();
-  return data;
+    const data = await response.json();
+    
+    return {
+      success: data.success,
+      redirectUrl: data.data?.instrumentResponse?.redirectInfo?.url,
+      message: data.message,
+      data: data,
+    };
+  } catch (error) {
+    console.error('PhonePe payment error:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Payment initiation failed',
+      redirectUrl: undefined,
+      data: null,
+    };
+  }
 }
 
-export async function checkPaymentStatus(merchantTransactionId: string) {
+export async function checkPaymentStatus(merchantOrderId: string) {
   const { merchantId, baseUrl, saltKey, saltIndex } = PHONEPE_CONFIG;
 
-  const endpoint = `/pg/v1/status/${merchantId}/${merchantTransactionId}`;
+  const endpoint = `/pg/v1/status/${merchantId}/${merchantOrderId}`;
   const dataToHash = endpoint + saltKey;
   const sha256Hash = crypto.createHash('sha256').update(dataToHash).digest('hex');
   const checksum = sha256Hash + '###' + saltIndex;
 
-  const response = await fetch(`${baseUrl}${endpoint}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-VERIFY': checksum,
-      'X-MERCHANT-ID': merchantId,
-    },
-  });
+  try {
+    const response = await fetch(`${baseUrl}${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-VERIFY': checksum,
+        'X-MERCHANT-ID': merchantId,
+      },
+    });
 
-  const data = await response.json();
-  return data;
+    const data = await response.json();
+    
+    return {
+      success: data.success && data.code === 'PAYMENT_SUCCESS',
+      state: data.code,
+      data: data,
+    };
+  } catch (error) {
+    console.error('PhonePe status check error:', error);
+    return {
+      success: false,
+      state: 'FAILED',
+      message: error instanceof Error ? error.message : 'Status check failed',
+      data: null,
+    };
+  }
 }
 
 export function generateTransactionId(): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8);
-  return `TXN${timestamp}${random}`.toUpperCase();
+  return randomUUID();
 }

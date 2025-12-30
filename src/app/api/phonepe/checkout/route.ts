@@ -10,7 +10,7 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, plan = 'basic', phone } = body;
+    const { email, plan = 'basic' } = body;
 
     if (!email) {
       return NextResponse.json(
@@ -38,23 +38,16 @@ export async function POST(request: NextRequest) {
     // Generate unique transaction ID
     const transactionId = generateTransactionId();
 
-    // Store transaction in database for tracking
-    // We'll use EmailLog temporarily to track payments
-    // In production, you'd have a separate Payments table
-
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-    // Initiate PhonePe payment
+    // Initiate PhonePe payment using official SDK
     const paymentResponse = await initiatePayment({
-      merchantTransactionId: transactionId,
+      merchantOrderId: transactionId,
       amount: amount,
-      merchantUserId: subscriber.id,
       redirectUrl: `${appUrl}/api/phonepe/callback`,
-      callbackUrl: `${appUrl}/api/phonepe/webhook`,
-      mobileNumber: phone,
     });
 
-    if (paymentResponse.success && paymentResponse.data?.instrumentResponse?.redirectInfo?.url) {
+    if (paymentResponse.success && paymentResponse.redirectUrl) {
       // Store transaction details for later verification
       await db.emailLog.create({
         data: {
@@ -68,7 +61,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ 
         success: true,
-        redirectUrl: paymentResponse.data.instrumentResponse.redirectInfo.url,
+        redirectUrl: paymentResponse.redirectUrl,
         transactionId,
       });
     } else {

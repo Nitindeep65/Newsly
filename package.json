@@ -57,6 +57,7 @@
     "motion": "^12.23.24",
     "next": "^15.5.9",
     "next-themes": "^0.4.6",
+    "pg-sdk-node": "https://phonepe.mycloudrepo.io/public/repositories/phonepe-pg-sdk-node/releases/v2/phonepe-pg-sdk-node-2.0.3.tgz",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-email": "^3.0.1",
