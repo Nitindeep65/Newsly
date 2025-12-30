@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
-  Sparkles, CheckCircle2, ArrowRight, Mail, 
-  TrendingUp, Newspaper, Clock, Target, ChevronRight,
-  Zap, BarChart3, Star, Coffee, Flame
+  Sparkles, CheckCircle2, ArrowRight, 
+  TrendingUp, Clock, Target, ChevronRight,
+  Zap, BarChart3, Star, Coffee, Flame, Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [topicSearch, setTopicSearch] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -66,12 +67,23 @@ export default function LandingPage() {
   };
 
   const topics = [
-    { icon: TrendingUp, name: "Stocks", desc: "Market trends", bg: "bg-emerald-500/10", text: "text-emerald-600", border: "border-emerald-200" },
-    { icon: Sparkles, name: "AI & Tech", desc: "New tools", bg: "bg-violet-500/10", text: "text-violet-600", border: "border-violet-200" },
-    { icon: BarChart3, name: "Crypto", desc: "DeFi news", bg: "bg-amber-500/10", text: "text-amber-600", border: "border-amber-200" },
-    { icon: Zap, name: "Startups", desc: "Funding", bg: "bg-sky-500/10", text: "text-sky-600", border: "border-sky-200" },
-    { icon: Target, name: "Productivity", desc: "Life hacks", bg: "bg-rose-500/10", text: "text-rose-600", border: "border-rose-200" },
+    { icon: TrendingUp, name: "Stocks", desc: "Market trends", bg: "bg-emerald-500/10", text: "text-emerald-600", border: "border-emerald-200", keywords: ["stocks", "market", "nse", "bse", "trading", "investment", "shares"] },
+    { icon: Sparkles, name: "AI & Tech", desc: "New tools", bg: "bg-violet-500/10", text: "text-violet-600", border: "border-violet-200", keywords: ["ai", "tech", "technology", "tools", "software", "artificial intelligence", "machine learning"] },
+    { icon: BarChart3, name: "Crypto", desc: "DeFi news", bg: "bg-amber-500/10", text: "text-amber-600", border: "border-amber-200", keywords: ["crypto", "bitcoin", "ethereum", "defi", "web3", "blockchain", "nft"] },
+    { icon: Zap, name: "Startups", desc: "Funding", bg: "bg-sky-500/10", text: "text-sky-600", border: "border-sky-200", keywords: ["startups", "funding", "venture", "entrepreneur", "business", "vc", "seed"] },
+    { icon: Target, name: "Productivity", desc: "Life hacks", bg: "bg-rose-500/10", text: "text-rose-600", border: "border-rose-200", keywords: ["productivity", "efficiency", "workflow", "automation", "habits", "time management"] },
   ];
+
+  // Filter topics based on search
+  const filteredTopics = useMemo(() => {
+    if (!topicSearch.trim()) return topics;
+    const search = topicSearch.toLowerCase();
+    return topics.filter(topic => 
+      topic.name.toLowerCase().includes(search) ||
+      topic.desc.toLowerCase().includes(search) ||
+      topic.keywords.some(kw => kw.includes(search))
+    );
+  }, [topicSearch]);
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
@@ -197,8 +209,30 @@ export default function LandingPage() {
             <p className="text-stone-600 dark:text-zinc-400">We&apos;ll curate stories just for you</p>
           </div>
 
+          {/* Topic Search */}
+          <div className="max-w-md mx-auto mb-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <Input
+                type="text"
+                placeholder="Search topics... (e.g., crypto, AI, stocks)"
+                value={topicSearch}
+                onChange={(e) => setTopicSearch(e.target.value)}
+                className="pl-10 rounded-full border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+              />
+              {topicSearch && (
+                <button 
+                  onClick={() => setTopicSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-sm"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {topics.map((topic, i) => (
+            {filteredTopics.length > 0 ? filteredTopics.map((topic, i) => (
               <motion.div
                 key={topic.name}
                 initial={{ opacity: 0, y: 10 }}
@@ -218,7 +252,17 @@ export default function LandingPage() {
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
+            )) : (
+              <div className="col-span-full text-center py-8 text-stone-500 dark:text-zinc-500">
+                <p>No topics found for &quot;{topicSearch}&quot;</p>
+                <button 
+                  onClick={() => setTopicSearch('')}
+                  className="mt-2 text-amber-500 hover:text-amber-600 text-sm font-medium"
+                >
+                  Show all topics
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </section>

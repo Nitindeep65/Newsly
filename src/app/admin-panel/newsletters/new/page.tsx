@@ -14,9 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Send, Eye } from "lucide-react";
+import { ArrowLeft, Loader2, Send, Users, Filter, Sparkles, TrendingUp, BarChart3, Zap, Target, Check } from "lucide-react";
 import Link from "next/link";
 
 interface Tool {
@@ -26,6 +26,26 @@ interface Tool {
   category: string;
 }
 
+interface Subscriber {
+  id: string;
+  email: string;
+  name: string | null;
+  tier: string;
+  topicAiTools: boolean;
+  topicStockMarket: boolean;
+  topicCrypto: boolean;
+  topicStartups: boolean;
+  topicProductivity: boolean;
+}
+
+const TOPICS = [
+  { key: 'topicAiTools', name: 'AI & Tech', icon: Sparkles, color: 'violet' },
+  { key: 'topicStockMarket', name: 'Stocks', icon: TrendingUp, color: 'emerald' },
+  { key: 'topicCrypto', name: 'Crypto', icon: BarChart3, color: 'amber' },
+  { key: 'topicStartups', name: 'Startups', icon: Zap, color: 'sky' },
+  { key: 'topicProductivity', name: 'Productivity', icon: Target, color: 'rose' },
+];
+
 export default function CreateNewsletterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -33,7 +53,9 @@ export default function CreateNewsletterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [tools, setTools] = useState<Tool[]>([]);
-  const [subscriberCount, setSubscriberCount] = useState(0);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [sendToAll, setSendToAll] = useState(true);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -41,7 +63,7 @@ export default function CreateNewsletterPage() {
     intro: "",
     selectedTools: [] as string[],
     customContent: "",
-    cta: "Check out all our tools at https://yoursite.com/tools",
+    cta: "Explore more on Newsly!",
   });
 
   useEffect(() => {
@@ -52,17 +74,46 @@ export default function CreateNewsletterPage() {
     try {
       const [toolsRes, subsRes] = await Promise.all([
         fetch('/api/tools?limit=50'),
-        fetch('/api/subscribers')
+        fetch('/api/subscribers?includeTopics=true')
       ]);
       
       const toolsData = await toolsRes.json();
       const subsData = await subsRes.json();
       
       setTools(toolsData.tools || []);
-      setSubscriberCount(subsData.total || 0);
+      setSubscribers(subsData.subscribers || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     }
+  };
+
+  // Filter subscribers based on selected topics
+  const filteredSubscribers = useMemo(() => {
+    if (sendToAll || selectedTopics.length === 0) return subscribers;
+    
+    return subscribers.filter(sub => {
+      return selectedTopics.some(topicKey => {
+        return sub[topicKey as keyof Subscriber] === true;
+      });
+    });
+  }, [subscribers, selectedTopics, sendToAll]);
+
+  // Group subscribers by their topic interests
+  const subscribersByTopic = useMemo(() => {
+    const groups: Record<string, Subscriber[]> = {};
+    TOPICS.forEach(topic => {
+      groups[topic.key] = subscribers.filter(s => s[topic.key as keyof Subscriber] === true);
+    });
+    return groups;
+  }, [subscribers]);
+
+  const toggleTopic = (topicKey: string) => {
+    setSelectedTopics(prev => 
+      prev.includes(topicKey) 
+        ? prev.filter(t => t !== topicKey)
+        : [...prev, topicKey]
+    );
+    setSendToAll(false);
   };
 
   const handleChange = (field: string, value: string | string[]) => {
@@ -84,8 +135,9 @@ export default function CreateNewsletterPage() {
       return;
     }
 
-    if (subscriberCount === 0) {
-      setError("No subscribers to send to. Get some subscribers first!");
+    const targetSubscribers = filteredSubscribers;
+    if (targetSubscribers.length === 0) {
+      setError("No subscribers match your filter criteria!");
       return;
     }
 
@@ -102,6 +154,8 @@ export default function CreateNewsletterPage() {
           subject: formData.subject,
           intro: formData.intro,
           toolIds: formData.selectedTools,
+          subscriberIds: sendToAll ? undefined : targetSubscribers.map(s => s.id),
+          targetTopics: sendToAll ? undefined : selectedTopics,
           customContent: formData.customContent,
           cta: formData.cta,
         }),
@@ -284,19 +338,101 @@ export default function CreateNewsletterPage() {
 
               {/* Sidebar */}
               <div className="space-y-4">
+                {/* Target Audience Filter */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Filter className="h-4 w-4" />
+                      Target Audience
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Send to All Toggle */}
+                    <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      sendToAll ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
+                    }`}>
+                      <input
+                        type="checkbox"
+                        checked={sendToAll}
+                        onChange={() => {
+                          setSendToAll(true);
+                          setSelectedTopics([]);
+                        }}
+                        className="h-4 w-4"
+                      />
+                      <div>
+                        <div className="font-medium">All Subscribers</div>
+                        <div className="text-xs text-muted-foreground">{subscribers.length} total</div>
+                      </div>
+                    </label>
+
+                    <div className="text-xs text-muted-foreground text-center">— or filter by interest —</div>
+
+                    {/* Topic Filters */}
+                    <div className="space-y-2">
+                      {TOPICS.map((topic) => {
+                        const count = subscribersByTopic[topic.key]?.length || 0;
+                        const isSelected = selectedTopics.includes(topic.key);
+                        return (
+                          <label
+                            key={topic.key}
+                            className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                              isSelected ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleTopic(topic.key)}
+                              className="h-4 w-4"
+                            />
+                            <topic.icon className={`h-4 w-4 text-${topic.color}-500`} />
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{topic.name}</div>
+                            </div>
+                            <div className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                              isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                            }`}>
+                              {count}
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+
+                    {/* Selected Summary */}
+                    {!sendToAll && selectedTopics.length > 0 && (
+                      <div className="p-3 bg-amber-50 dark:bg-amber-500/10 rounded-lg border border-amber-200 dark:border-amber-500/30">
+                        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                          <Users className="h-4 w-4" />
+                          <span className="text-sm font-medium">
+                            {filteredSubscribers.length} subscribers match
+                          </span>
+                        </div>
+                        <div className="text-xs text-amber-600/70 dark:text-amber-400/70 mt-1">
+                          Subscribers interested in: {selectedTopics.map(t => TOPICS.find(x => x.key === t)?.name).join(', ')}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Send Card */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Send Newsletter</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-center py-4">
-                      <div className="text-3xl font-bold">{subscriberCount}</div>
-                      <div className="text-sm text-muted-foreground">subscribers will receive this</div>
+                      <div className="text-3xl font-bold">{sendToAll ? subscribers.length : filteredSubscribers.length}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {sendToAll ? 'all subscribers' : 'filtered subscribers'} will receive this
+                      </div>
                     </div>
 
                     <Button 
                       onClick={handleSend} 
-                      disabled={sending || subscriberCount === 0}
+                      disabled={sending || (sendToAll ? subscribers.length === 0 : filteredSubscribers.length === 0)}
                       className="w-full"
                       size="lg"
                     >

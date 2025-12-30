@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const { searchParams } = new URL(request.url);
+    const includeTopics = searchParams.get('includeTopics') === 'true';
+
     const subscribers = await db.subscriber.findMany({
       orderBy: { subscribedAt: 'desc' },
       select: {
@@ -22,6 +25,13 @@ export async function GET(request: NextRequest) {
         tier: true,
         verified: true,
         subscribedAt: true,
+        ...(includeTopics && {
+          topicAiTools: true,
+          topicStockMarket: true,
+          topicCrypto: true,
+          topicStartups: true,
+          topicProductivity: true,
+        }),
       }
     });
 
