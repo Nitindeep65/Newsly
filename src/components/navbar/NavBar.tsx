@@ -23,6 +23,7 @@ export function NavBar() {
             <Link href="#features" className="hover:text-gray-400 transition-colors">Features</Link>
             <Link href="#how" className="hover:text-gray-400 transition-colors">How it Works</Link>
             <Link href="#pricing" className="hover:text-gray-400 transition-colors">Pricing</Link>
+            <Link href="/my-newsletters" className="hover:text-gray-400 transition-colors">My Newsletters</Link>
             <Link href={'/sign-in'} className="hover:text-gray-400 transition-colors">Sign In</Link>
             <Link href={'/sign-up'}  className="bg-white text-black px-6 py-2 rounded hover:bg-gray-200 transition-colors font-medium">Get Started</Link>
             <UserButton afterSignOutUrl="/" />

@@ -135,7 +135,7 @@ function MockPaymentContent() {
               </Button>
 
               <Button 
-                onClick={() => router.push('/')} 
+                onClick={() => router.push('/my-newsletters')} 
                 variant="outline"
                 className="w-full"
               >

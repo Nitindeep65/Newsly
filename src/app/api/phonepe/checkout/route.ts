@@ -51,6 +51,7 @@ async function handleCheckout(email: string, plan: string) {
     if (normalizedPlan === 'BASIC') normalizedPlan = 'PRO';
     const planKey = normalizedPlan as keyof typeof PLAN_PRICES;
     const amount = PLAN_PRICES[planKey] || PLAN_PRICES.PRO;
+    const planName = PLAN_NAMES[planKey] || PLAN_NAMES.PRO;
 
     // Find or create subscriber
     let subscriber = await db.subscriber.findUnique({
