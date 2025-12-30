@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, subject, intro, toolIds, customContent, cta, subscriberIds, targetTopics } = body;
+    const { title, subject, intro, toolIds, customContent, cta, subscriberIds, targetTopics, newsletterId } = body;
 
     // Build subscriber query based on targeting
     interface SubscriberData {
@@ -153,15 +153,30 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create newsletter record
-    const newsletter = await db.newsletter.create({
-      data: {
-        subject: subject || title,
-        contentHtml: `Targeted: ${subscriberIds ? 'Yes' : 'No'} | Topics: ${targetTopics?.join(', ') || 'All'}`,
-        status: 'SENT',
-        sentAt: new Date(),
-      }
-    });
+    // Create or update newsletter record
+    let newsletter;
+    if (newsletterId) {
+      // Update existing draft
+      newsletter = await db.newsletter.update({
+        where: { id: newsletterId },
+        data: {
+          subject: subject || title,
+          contentHtml: `Targeted: ${subscriberIds ? 'Yes' : 'No'} | Topics: ${targetTopics?.join(', ') || 'All'}`,
+          status: 'SENT',
+          sentAt: new Date(),
+        }
+      });
+    } else {
+      // Create new newsletter
+      newsletter = await db.newsletter.create({
+        data: {
+          subject: subject || title,
+          contentHtml: `Targeted: ${subscriberIds ? 'Yes' : 'No'} | Topics: ${targetTopics?.join(', ') || 'All'}`,
+          status: 'SENT',
+          sentAt: new Date(),
+        }
+      });
+    }
 
     // Send to all targeted subscribers
     let sentCount = 0;

@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { Plus, Mail, Send, FileText } from "lucide-react";
+import { Plus, Mail, Send, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface Newsletter {
@@ -34,11 +34,14 @@ interface Newsletter {
   openRate: number | null;
   clickRate: number | null;
   createdAt: string;
+  intro?: string;
+  customContent?: string;
 }
 
 export default function NewslettersPage() {
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sendingId, setSendingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchNewsletters();
@@ -53,6 +56,38 @@ export default function NewslettersPage() {
       console.error('Failed to fetch newsletters:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendDraft = async (newsletter: Newsletter) => {
+    if (!confirm(`Send "${newsletter.title}" to all subscribers?`)) return;
+    
+    setSendingId(newsletter.id);
+    try {
+      const res = await fetch('/api/newsletter/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          newsletterId: newsletter.id,
+          title: newsletter.title,
+          subject: newsletter.subject,
+          intro: newsletter.intro || '',
+          customContent: newsletter.customContent || '',
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert(`Newsletter sent to ${data.sentCount} subscribers!`);
+        fetchNewsletters(); // Refresh list
+      } else {
+        alert(data.error || 'Failed to send newsletter');
+      }
+    } catch (error) {
+      console.error('Failed to send newsletter:', error);
+      alert('Failed to send newsletter');
+    } finally {
+      setSendingId(null);
     }
   };
 
@@ -140,7 +175,7 @@ export default function NewslettersPage() {
                       <TableHead>Status</TableHead>
                       <TableHead>Sent</TableHead>
                       <TableHead className="text-center">Open Rate</TableHead>
-                      <TableHead className="text-center">Click Rate</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -163,8 +198,29 @@ export default function NewslettersPage() {
                         <TableCell className="text-center">
                           {newsletter.openRate !== null ? `${newsletter.openRate}%` : '-'}
                         </TableCell>
-                        <TableCell className="text-center">
-                          {newsletter.clickRate !== null ? `${newsletter.clickRate}%` : '-'}
+                        <TableCell className="text-right">
+                          {newsletter.status === 'DRAFT' && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleSendDraft(newsletter)}
+                              disabled={sendingId === newsletter.id}
+                            >
+                              {sendingId === newsletter.id ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                  Sending...
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="h-4 w-4 mr-1" />
+                                  Send Now
+                                </>
+                              )}
+                            </Button>
+                          )}
+                          {newsletter.status === 'SENT' && (
+                            <span className="text-sm text-muted-foreground">Delivered</span>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
